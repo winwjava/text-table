@@ -1,1 +1,1 @@
-# table-file, utility for read and write tabular data, supports files: txt, csv, excel.
+#The utility used to read and write tabular data, supporting: txt, csv, excel.
