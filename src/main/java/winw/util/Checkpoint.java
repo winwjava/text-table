@@ -1,4 +1,4 @@
-package winw.utils;
+package winw.util;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
