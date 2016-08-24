@@ -32,6 +32,7 @@ public class Checkpoint {
 	public Checkpoint() {
 		super();
 		this.lock = new ReentrantLock();
+		this.condition = lock.newCondition();
 	}
 
 	public Checkpoint(long interval, int limit, boolean fair) {
