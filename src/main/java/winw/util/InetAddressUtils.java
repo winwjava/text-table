@@ -1,4 +1,4 @@
-package winw.utils;
+package winw.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

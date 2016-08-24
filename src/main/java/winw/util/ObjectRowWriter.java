@@ -1,4 +1,4 @@
-package winw.utils;
+package winw.util;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

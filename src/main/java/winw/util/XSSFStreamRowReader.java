@@ -1,4 +1,4 @@
-package winw.utils;
+package winw.util;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package winw.utils;
+package winw.util;
 
 import java.io.Closeable;
 import java.io.Flushable;

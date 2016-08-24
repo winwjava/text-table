@@ -1,10 +1,12 @@
-package winw.utils;
+package winw.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import winw.util.InetAddressUtils;
 
 public class InetAddressUtilsTest {
 
