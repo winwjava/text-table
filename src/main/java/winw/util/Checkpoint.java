@@ -55,23 +55,19 @@ public class Checkpoint {
 		if (num <= 0 || num > limit) {
 			throw new IllegalArgumentException("Illegal acquire: " + num + ", less than 1 or greater than " + limit);
 		}
-		// 如果计数器没有达到限制速度
-		if (counter.get() < limit) {
-			// 计数器增加
-			return limit - counter.addAndGet(num);
-		}
-
 		lock.lock();
 		try {
-			// 等待到下一个放行时间
-			condition.await(lastCheck + intervalMillis - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-
-			// 增加判断是为了在await结束后都会向下运行，但只能重置一次
+			// 先检查时间，如果进入下一个周期，就把计数器归零
 			if (System.currentTimeMillis() - lastCheck >= intervalMillis) {
-				// 计数器归零
-				counter.set(0);
+				counter.set(0);// 计数器归零
 				lastCheck = System.currentTimeMillis();
 			}
+			// 如果计数器没有达到限制速度
+			if (counter.get() < limit) {
+				return limit - counter.addAndGet(num);// 计数器增加
+			}
+			// 否则等待到下一个放行时间
+			condition.await(lastCheck + intervalMillis - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 			// 进入新的检查点
 			return acquire(num);
 		} finally {
@@ -95,24 +91,23 @@ public class Checkpoint {
 		this.limit = limit;
 	}
 
-	// public static void main(String[] args) throws InterruptedException {
-	// Checkpoint checkpoint = new Checkpoint();
-	// Runnable r = () -> {
-	// for (int i = 0; i < 100; i++) {
-	// try {
-	// checkpoint.acquire(1000, 100);
-	// System.out.println(new Date().toString() + " - " +
-	// Thread.currentThread().getName() + " - 100");
-	// } catch (InterruptedException e) {
-	// }
-	// }
-	// };
-	//
-	// for (int i = 0; i < 10; i++) {
-	// Thread t = new Thread(r);
-	// t.setDaemon(true);
-	// t.start();
-	// }
-	// Thread.sleep(10000);
-	// }
+//	public static void main(String[] args) throws InterruptedException {
+//		Checkpoint checkpoint = new Checkpoint();
+//		Runnable r = () -> {
+//			for (int i = 0; i < 100; i++) {
+//				try {
+//					checkpoint.acquire(1200);
+//					System.out.println(new Date().toString() + " - " + Thread.currentThread().getName() + " - 200");
+//				} catch (InterruptedException e) {
+//				}
+//			}
+//		};
+//
+//		for (int i = 0; i < 10; i++) {
+//			Thread t = new Thread(r);
+//			t.setDaemon(true);
+//			t.start();
+//		}
+//		Thread.sleep(10000);
+//	}
 }
