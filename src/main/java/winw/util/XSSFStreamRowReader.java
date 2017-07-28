@@ -110,7 +110,7 @@ public class XSSFStreamRowReader implements RowReader {
             bufferRows.drainTo(rows, size);
         }
 
-        while (hasNext.get() && size > rows.size()) {
+        while (rows.size() < size && hasNext()) {
             if (!bufferRows.isEmpty()) {
                 bufferRows.drainTo(rows, size - rows.size());
             } else {
