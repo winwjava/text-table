@@ -5,6 +5,20 @@
   <artifactId>winw-util</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <filters>
+          <filter>src/main/filters/dev.properties</filter>
+        </filters>
+      </build>
+    </profile>
+  </profiles>
+  
   <properties>
     <maven.test.skip>true</maven.test.skip>
     <maven.compiler.source>1.6</maven.compiler.source>
