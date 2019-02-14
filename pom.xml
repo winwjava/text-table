@@ -2,11 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>winw</groupId>
-  <artifactId>winw-util</artifactId>
+  <artifactId>winw-java</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <build>
-    <finalName>winw-util-0.0.1-SNAPSHOT</finalName>
+    <finalName>winw-java-0.0.1-SNAPSHOT</finalName>
     <resources>
       <resource>
         <filtering>true</filtering>
