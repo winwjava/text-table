@@ -1,1 +1,1 @@
-#Java utilities.
+#Java Utility.
