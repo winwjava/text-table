@@ -1,4 +1,4 @@
-package winw.ai.subjective;
+package winw.ai.util;
 
 import java.io.FileReader;
 import javax.script.Invocable;

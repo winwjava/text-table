@@ -1,4 +1,4 @@
-package winw.ai.perception;
+package winw.ai.util;
 
 public class ObjectRecognition {
 

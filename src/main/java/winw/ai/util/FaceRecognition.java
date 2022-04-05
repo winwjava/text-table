@@ -1,4 +1,4 @@
-package winw.ai.perception;
+package winw.ai.util;
 
 import java.io.File;
 import java.io.IOException;
