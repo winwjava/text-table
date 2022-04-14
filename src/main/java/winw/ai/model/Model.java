@@ -1,7 +1,9 @@
-package winw.ai.perception;
+package winw.ai.model;
 
 /**
- * 模型，还带有大小多少，外观，气味，等等属性。
+ * 模型，还带有大小多少，形状、外观，气味，等等属性。
+ * 
+ * <p>ONNX
  * @author winw
  *
  */

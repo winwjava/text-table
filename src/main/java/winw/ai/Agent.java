@@ -8,11 +8,11 @@ import java.util.concurrent.Executors;
 
 import winw.ai.memory.Memory;
 import winw.ai.memory.MemoryRelation;
-import winw.ai.perception.Model;
+import winw.ai.model.Model;
 import winw.ai.subjective.Action;
 
 /**
- * 智能主体。包含神经系统的智能主体可以更有效适应环境，利用环境和改造环境。
+ * 智能主体。包含神经系统的智能主体可以更有效适应环境，改造环境和利用环境。
  * 
  * <p>
  * 智能体基于神经网络，包含有记忆系统，感知系统，自主反应系统和主观反应系统。
