@@ -6,7 +6,7 @@ package winw.ai.memory;
  * @author winw
  *
  */
-public class MemoryRelation<M extends Memory> {
+public class MemoryRelation {
 
 	private Memory memory;
 

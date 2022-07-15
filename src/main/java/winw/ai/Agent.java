@@ -117,7 +117,7 @@ public class Agent extends CerebralCortex {
 		// TODO 饥饿时对食物会更加有注意力
 
 		// 将 RelMemory 放进 瞬时记忆，关联思考能力
-		List<MemoryRelation<Memory>> relMemory = attention.getRelMemory();
+		List<MemoryRelation> relMemory = attention.getRelMemory();
 		if (relMemory != null && relMemory.size() > 0) {
 			// 随机取一个作为瞬时记忆。
 			momentMemory.put(relMemory.get(0).getMemory(), 0.5);
