@@ -100,7 +100,9 @@ public class FaceRecognition {
 		
 		faceRecogntion.registerNewMember("ysj", "E:\\VideoCapture\\99.jpg");
 		
-		faceRecogntion.whoIs("D:\\Winw\\2015\\WIN_20150902_085736.JPG");
+//		String whoIs = faceRecogntion.whoIs("D:\\Winw\\2015\\WIN_20150902_085736.JPG");
+		String whoIs = faceRecogntion.whoIs("E:\\VideoCapture\\9.jpg");
+		System.out.println("whoIs: "+whoIs);
 		
 	}
 }

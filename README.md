@@ -76,7 +76,7 @@ https://mp.weixin.qq.com/s/v6xXHbZ_NcuS2XaUF37Oyg
 上图内嗅皮层（右图蓝色指示部位）的网格细胞在大鼠经过六边形网格的节点时发放电信号。
 
 
-神经科学的这个发现当时给了我非常深刻的印象，不仅找到了大脑中抽象的空间位置表达模型，我认为这也是图模型在大脑认知模型中的最有力的证据（拓扑图是图模型中的一种）。其他的认知行为也与此类似，比如物体识别、形状识别等等。
+神经科学的这个重大发现打开了大脑记忆模型的大门，找到了大脑中抽象的空间位置表达模型（图表征），我认为这是图模型在大脑认知模型中的最有力的证据（拓扑图是图模型中的一种）。其他的认知行为也与此类似，比如物体识别、形状识别等等。
 
 
 
@@ -182,3 +182,10 @@ Neuronal Computation Underlying Inferential Reasoning in Humans and Mice
 https://zhuanlan.zhihu.com/p/61738979  
 Wikenheiser et al., Suppression of Ventral Hippocampal Output Impairs Integrated Orbitofrontal Encoding of Task Structure, Neuron (2017).   
 https://doi.org/10.1016/j.cell.2021.05.022
+
+
+##程序实现
+
+设计一个5*5或 9*9的迷宫游戏，一个入口和出口，也可以增加陷阱或死胡同，经过强化学习，探索出走出迷宫的正确路径。
+
+https://zhuanlan.zhihu.com/p/343668723
