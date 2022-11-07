@@ -111,7 +111,6 @@ public class VisualPerception {
 		BufferedImage graphImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(),BufferedImage.TYPE_INT_RGB);
 
 		for(GraphNode node: graph.getNodes()) {
-			System.out.println(node.getX() +", "+node.getY());
 			graphImage.setRGB(node.getX(), node.getY(), 65281);
 		}
 
@@ -130,7 +129,7 @@ public class VisualPerception {
 //		ops.flush();
 //		ops.close();
 		
-		// TODO 寻找所有的闭合区域。
+		// TODO 寻找所有的闭合区域。长时程增强，自动聚类。
 		// TODO 物体分割提取，每个物体构成的边界会组成一个闭合区域。但有时候有遮挡或干扰，应该怎么处理。
 		
 	}

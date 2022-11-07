@@ -41,8 +41,8 @@ public class Graph {// 文字，包括象形文字是图的最广泛的应用方
 	public HashSet<GraphNode> getNodes() {
 		return nodelist;
 	}
-	
-	// protected List<GraphEdge> edgelist;// 边，可以是曲边，可以是向量，有向，边与边可以围成一个面。
+
+	protected List<GraphEdge> edgelist;// 边，可以是曲边，可以是向量，有向，边与边可以围成一个面。
 
 	public void addNode(int x, int y) {
 		nodelist.add(GraphNode.of(x, y));
@@ -50,6 +50,19 @@ public class Graph {// 文字，包括象形文字是图的最广泛的应用方
 
 	public void addNode(GraphNode node) {
 		nodelist.add(node);
+	}
+
+	/**
+	 * 图像的边缘包含了物体形状的重要信息，它不仅在分析图像时大幅度地减少了要处理的信息量，而且还保护了目标的边界结构。
+	 * 
+	 * 边缘检测是利用物体和背景在某种图像特性上的差异来实现的。常见的边缘检测方法有微分算子、Canny 算子和LOG 算子等。常用的微分算子有 Sobel
+	 * 算子、Roberts 算子和 Prewit 算子等。
+	 */
+	public void edge() {// 边
+		// TODO 根据点，连线形成边，组成形状。根据形状识别物体。
+		for (GraphNode node : nodelist) {
+
+		}
 	}
 
 	// TODO 划分为子图
