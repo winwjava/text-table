@@ -60,9 +60,9 @@ public class Graph {// 文字，包括象形文字是图的最广泛的应用方
 	 */
 	public void edge() {// 边
 		// TODO 根据点，连线形成边，组成形状。根据形状识别物体。
-		for (GraphNode node : nodelist) {
-
-		}
+//		for (GraphNode node : nodelist) {
+//
+//		}
 	}
 
 	// TODO 划分为子图

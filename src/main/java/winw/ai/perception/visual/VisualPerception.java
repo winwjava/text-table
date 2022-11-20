@@ -4,14 +4,18 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import winw.ai.memory.Memory;
 import winw.ai.model.Graph;
 import winw.ai.model.GraphNode;
+import winw.ai.model.Model;
 
 /**
  * 视觉感知。
@@ -98,6 +102,36 @@ public class VisualPerception {
 		// 可实现运动物体的跟踪。或调整姿态以便保持视图稳定。
 	}
 
+
+	/**
+	 * 概念记忆，一个模型对应一个概念记忆。经典条件反射。
+	 */
+	protected Map<Model, Memory> modelMapping = new HashMap<Model, Memory>();
+
+	/**
+	 * 瞬时记忆与活跃值。由海马体维持，如果短时间没有持续激活，则会减弱，甚至消失。
+	 * <p>
+	 * 活跃值 介于0和1，数字越大越活跃。
+	 */
+	protected Map<Memory, Double> momentMemory = new HashMap<Memory, Double>();
+	/**
+	 * 感知，包括视觉、听觉
+	 */
+	protected void perception(Model model) {
+		// 短时记忆，只能记住7个数字？
+
+		Memory memory = modelMapping.get(model);
+		if (model == null) {
+			memory = modelMapping.put(model, new Memory("没见过的模型"));
+
+			momentMemory.put(memory, 0.5);//
+		} else {
+
+			// 根据感知的强度，传递活跃度。
+			momentMemory.put(memory, 0.5);
+		}
+	}
+	
 	public static void main(String[] args) throws IOException {
 
 		// TODO 从相机中读取图片。

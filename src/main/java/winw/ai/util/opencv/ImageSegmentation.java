@@ -31,6 +31,7 @@ class ImageSegmentation {
 	public void run(String[] args) {
 		// Load the image
 		String filename = args.length > 0 ? args[0] : "E:\\opencv-4.x\\samples\\data\\cards.png";
+//		filename = "E:\\2016.jpg";
 		Mat srcOriginal = Imgcodecs.imread(filename);
 		if (srcOriginal.empty()) {
 			System.err.println("Cannot read image: " + filename);
@@ -38,6 +39,9 @@ class ImageSegmentation {
 		}
 		// Show source image
 		HighGui.imshow("Source Image", srcOriginal);
+		
+		// 将白色背景改为黑色，以便于使用距离变换
+		
 		// Change the background from white to black, since that will help later to
 		// extract
 		// better results during the use of Distance Transform
@@ -58,6 +62,9 @@ class ImageSegmentation {
 		src.put(0, 0, srcData);
 		// Show output image
 		HighGui.imshow("Black Background Image", src);
+		
+		// 尖锐
+		
 		// Create a kernel that we will use to sharpen our image
 		Mat kernel = new Mat(3, 3, CvType.CV_32F);
 		// an approximation of second derivative, a quite strong kernel
@@ -72,6 +79,8 @@ class ImageSegmentation {
 		kernelData[7] = 1;
 		kernelData[8] = 1;
 		kernel.put(0, 0, kernelData);
+		
+		
 		// do the laplacian filtering as it is
 		// well, we need to convert everything in something more deeper then CV_8U
 		// because the kernel has some negative values,
@@ -79,6 +88,8 @@ class ImageSegmentation {
 		// BUT a 8bits unsigned int (the one we are working with) can contain values
 		// from 0 to 255
 		// so the possible negative number will be truncated
+
+		// 拉普拉斯算法
 		Mat imgLaplacian = new Mat();
 		Imgproc.filter2D(src, imgLaplacian, CvType.CV_32F, kernel);
 		Mat sharp = new Mat();
@@ -125,7 +136,10 @@ class ImageSegmentation {
 		Mat hierarchy = new Mat();
 		Imgproc.findContours(dist_8u, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		// Create the marker image for the watershed algorithm
+		
+		// 用分水岭算法，分割为一个一个记号。
 		Mat markers = Mat.zeros(dist.size(), CvType.CV_32S);
+		System.out.println("markers total: "+markers.total());
 		// Draw the foreground markers
 		for (int i = 0; i < contours.size(); i++) {
 			Imgproc.drawContours(markers, contours, i, new Scalar(i + 1), -1);
@@ -149,6 +163,7 @@ class ImageSegmentation {
 		// Generate random colors
 		Random rng = new Random(12345);
 		List<Scalar> colors = new ArrayList<>(contours.size());
+		System.out.println("contours size: "+contours.size());
 		for (int i = 0; i < contours.size(); i++) {
 			int b = rng.nextInt(256);
 			int g = rng.nextInt(256);

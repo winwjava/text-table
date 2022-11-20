@@ -7,7 +7,6 @@ import javax.script.ScriptEngine;
 
 import javax.script.ScriptEngineManager;
 
-/** * Java调用并执行js文件，传递参数，并活动返回值 * * @author manjushri */
 
 public class ScriptEngineTest {
 

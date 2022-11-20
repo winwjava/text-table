@@ -95,19 +95,43 @@ class FindContours {
 		pane.add(imgPanel, BorderLayout.CENTER);
 	}
 
+	int repaint = 0;
+
+	public void findContours() {
+		
+	}
+	
 	private void update() {
+		repaint++;
+
 		Mat cannyOutput = new Mat();
 		Imgproc.Canny(srcGray, cannyOutput, threshold, threshold * 2);
-		List<MatOfPoint> contours = new ArrayList<>();
-		Mat hierarchy = new Mat();
+
+		Mat hierarchy = new Mat();// 层次
+		List<MatOfPoint> contours = new ArrayList<>();// 轮廓
 		Imgproc.findContours(cannyOutput, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 		Mat drawing = Mat.zeros(cannyOutput.size(), CvType.CV_8UC3);
-		for (int i = 0; i < contours.size(); i++) {
+
+
+		for (int i = 0; i < contours.size(); i++) {// 每一个轮廓
 			Scalar color = new Scalar(rng.nextInt(256), rng.nextInt(256), rng.nextInt(256));
+
+			MatOfPoint matOfPoint = contours.get(i);
+
+			List<Point> pointList = matOfPoint.toList();
+
+			System.out.println("contours " + i + ", size: " + pointList.size() + "," + pointList);
+
+			// 画出轮廓，
 			Imgproc.drawContours(drawing, contours, i, color, 2, Imgproc.LINE_8, hierarchy, 0, new Point());
+			
+			if( i >= repaint) {
+				break;
+			}
 		}
 		imgContoursLabel.setIcon(new ImageIcon(HighGui.toBufferedImage(drawing)));
 		frame.repaint();
+
 	}
 
 	public static void main(String[] args) {
