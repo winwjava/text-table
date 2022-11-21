@@ -20,6 +20,10 @@ import winw.ai.model.Model;
 /**
  * 视觉感知。
  * 
+ * <p> 获得注意力关注，
+ * <p> visuospatial sketchpad 视空间模版，模型匹配
+ * <p> episodic buffer 情景缓存
+ * 
  * <p>
  * 模拟视网膜到V1，再经过V2、V3、V4
  * 
