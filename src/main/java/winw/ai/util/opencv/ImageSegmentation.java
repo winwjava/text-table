@@ -1,9 +1,9 @@
 package winw.ai.util.opencv;
 
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.Random;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -13,6 +13,9 @@ import org.opencv.core.Scalar;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import winw.ai.perception.visual.VisualShape;
+import winw.ai.perception.visual.VisualShapePanel;
 
 /**
  * 图像分割，用到了拉普拉斯算法等。
@@ -31,7 +34,7 @@ class ImageSegmentation {
 	public void run(String[] args) {
 		// Load the image
 		String filename = args.length > 0 ? args[0] : "E:\\opencv-4.x\\samples\\data\\cards.png";
-//		filename = "E:\\2016.jpg";
+//		filename = "E:\\1.jpg";
 		Mat srcOriginal = Imgcodecs.imread(filename);
 		if (srcOriginal.empty()) {
 			System.err.println("Cannot read image: " + filename);
@@ -143,7 +146,13 @@ class ImageSegmentation {
 		// Draw the foreground markers
 		for (int i = 0; i < contours.size(); i++) {
 			Imgproc.drawContours(markers, contours, i, new Scalar(i + 1), -1);
+			
+			
+			
+			VisualShapePanel.show("MatOfPoint",new VisualShape(contours.get(i).toList()));
 		}
+
+		
 		// Draw the background marker
 		Mat markersScaled = new Mat();
 		markers.convertTo(markersScaled, CvType.CV_32F);
@@ -163,7 +172,6 @@ class ImageSegmentation {
 		// Generate random colors
 		Random rng = new Random(12345);
 		List<Scalar> colors = new ArrayList<>(contours.size());
-		System.out.println("contours size: "+contours.size());
 		for (int i = 0; i < contours.size(); i++) {
 			int b = rng.nextInt(256);
 			int g = rng.nextInt(256);
@@ -177,10 +185,19 @@ class ImageSegmentation {
 		// Fill labeled objects with random colors
 		int[] markersData = new int[(int) (markers.total() * markers.channels())];
 		markers.get(0, 0, markersData);
+
+		System.out.println("contours size: "+contours.size());
+		System.out.println("dstData silze: "+dstData.length);
+		System.out.println("markers rows: "+markers.rows());
+		System.out.println("markers cols: "+markers.cols());
+		System.out.println("markers channels: "+markers.channels());
 		for (int i = 0; i < markers.rows(); i++) {
 			for (int j = 0; j < markers.cols(); j++) {
 				int index = markersData[i * markers.cols() + j];
+				// 每一个labeled objects
 				if (index > 0 && index <= contours.size()) {
+					
+					// 下面是设置颜色？
 					dstData[(i * dst.cols() + j) * 3 + 0] = (byte) colors.get(index - 1).val[0];
 					dstData[(i * dst.cols() + j) * 3 + 1] = (byte) colors.get(index - 1).val[1];
 					dstData[(i * dst.cols() + j) * 3 + 2] = (byte) colors.get(index - 1).val[2];

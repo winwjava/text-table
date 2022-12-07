@@ -1,28 +1,21 @@
 package winw.ai.perception.visual;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import winw.ai.memory.Memory;
-import winw.ai.model.Graph;
-import winw.ai.model.GraphNode;
 import winw.ai.model.Model;
 
 /**
  * 视觉感知。
  * 
- * <p> 获得注意力关注，
- * <p> visuospatial sketchpad 视空间模版，模型匹配
- * <p> episodic buffer 情景缓存
+ * <p>
+ * 获得注意力关注，
+ * <p>
+ * visuospatial sketchpad 视空间模版，模型匹配
+ * <p>
+ * episodic buffer 情景缓存
  * 
  * <p>
  * 模拟视网膜到V1，再经过V2、V3、V4
@@ -106,7 +99,6 @@ public class VisualPerception {
 		// 可实现运动物体的跟踪。或调整姿态以便保持视图稳定。
 	}
 
-
 	/**
 	 * 概念记忆，一个模型对应一个概念记忆。经典条件反射。
 	 */
@@ -118,6 +110,7 @@ public class VisualPerception {
 	 * 活跃值 介于0和1，数字越大越活跃。
 	 */
 	protected Map<Memory, Double> momentMemory = new HashMap<Memory, Double>();
+
 	/**
 	 * 感知，包括视觉、听觉
 	 */
@@ -135,40 +128,13 @@ public class VisualPerception {
 			momentMemory.put(memory, 0.5);
 		}
 	}
-	
+
 	public static void main(String[] args) throws IOException {
 
 		// TODO 从相机中读取图片。
 
-		File file = new File("E:\\2016.jpg");
-		BufferedImage bufferedImage = ImageIO.read(file);
-		Graph graph = RetinaEdge.generateGraph(bufferedImage);
-		JFrame frame = new JFrame("winw-game");
-		JPanel container = new JPanel();
-
-		BufferedImage graphImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(),BufferedImage.TYPE_INT_RGB);
-
-		for(GraphNode node: graph.getNodes()) {
-			graphImage.setRGB(node.getX(), node.getY(), 65281);
-		}
-
-		ImagePanel imagePanel = new ImagePanel(graphImage);
-		
-		imagePanel.setPreferredSize(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()));
-		container.add(imagePanel);
-		
-		frame.setVisible(true);
-		frame.add(new JScrollPane(container));
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-//		FileOutputStream ops = new FileOutputStream(new File("E:\\2016_edge4_" + file.getName()));
-//		ImageIO.write(bufferedImage, "jpg", ops);
-//		ops.flush();
-//		ops.close();
-		
 		// TODO 寻找所有的闭合区域。长时程增强，自动聚类。
 		// TODO 物体分割提取，每个物体构成的边界会组成一个闭合区域。但有时候有遮挡或干扰，应该怎么处理。
-		
+
 	}
 }

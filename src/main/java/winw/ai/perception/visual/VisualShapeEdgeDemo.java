@@ -1,19 +1,7 @@
-package winw.ai.util.opencv;
+package winw.ai.perception.visual;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -29,127 +17,87 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualShape;
-import winw.ai.perception.visual.VisualShapePanel;
-
-public class CannyDetectorDemo {
-	private static final int MAX_LOW_THRESHOLD = 100;
-	private static final int RATIO = 3;
-	private static final int KERNEL_SIZE = 3;
-	private static final Size BLUR_SIZE = new Size(3, 3);
-	private int lowThresh = 0;
-	private Mat src;
-	private Mat srcBlur = new Mat();
-	private Mat detectedEdges = new Mat();
-	private Mat dst = new Mat();
-	private JFrame frame;
-	private JLabel imgLabel;
+/**
+ * 视觉形状，通过边缘实现。
+ * @author winw
+ *
+ */
+public class VisualShapeEdgeDemo {
 
 	public static void main(String[] args) {
 		// Load the native OpenCV library
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-		// Schedule a job for the event dispatch thread:
-		// creating and showing this application's GUI.
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				new CannyDetectorDemo(args);
-			}
-		});
-
-		// 卷积计算：形状。
-		// 强化记忆：长时程增强。
-		// 强化学习：认知。
+		new VisualShapeEdgeDemo().run(args);
 	}
 
-	public CannyDetectorDemo(String[] args) {
-		String imagePath = args.length > 0 ? args[0] : "e:\\ww.png";
-		src = Imgcodecs.imread(imagePath);
+	public void run(String[] args) {
+		// Load the image
+		String filename = args.length > 0 ? args[0] : "e:\\cards.png";
+		filename = "e:\\ww.png";
+//		filename = "e:\\operant-conditioning.jpg";
+		Mat src = Imgcodecs.imread(filename);
 		if (src.empty()) {
-			System.out.println("Empty image: " + imagePath);
+			System.err.println("Cannot read image: " + filename);
 			System.exit(0);
 		}
-		// Create and set up the window.
-		frame = new JFrame("Edge Map (Canny detector demo)");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// Set up the content pane.
-		Image img = HighGui.toBufferedImage(src);
-		addComponentsToPane(frame.getContentPane(), img);
-		// Use the content pane's default BorderLayout. No need for
-		// setLayout(new BorderLayout());
-		// Display the window.
-		frame.pack();
-		frame.setVisible(true);
-	}
 
-	private void addComponentsToPane(Container pane, Image img) {
-		if (!(pane.getLayout() instanceof BorderLayout)) {
-			pane.add(new JLabel("Container doesn't use BorderLayout!"));
-			return;
-		}
-		JPanel sliderPanel = new JPanel();
-		sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
-		sliderPanel.add(new JLabel("Min Threshold:"));
-		JSlider slider = new JSlider(0, MAX_LOW_THRESHOLD, 0);
-		slider.setMajorTickSpacing(10);
-		slider.setMinorTickSpacing(5);
-		slider.setPaintTicks(true);
-		slider.setPaintLabels(true);
-		slider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				JSlider source = (JSlider) e.getSource();
-				lowThresh = source.getValue();
-				update();
-			}
-		});
-		sliderPanel.add(slider);
-		pane.add(sliderPanel, BorderLayout.PAGE_START);
-		imgLabel = new JLabel(new ImageIcon(img));
-		pane.add(imgLabel, BorderLayout.CENTER);
-	}
-
-	boolean updated = false;
-
-	private synchronized void update() {
 		// 高斯 滤波 降噪
-		Imgproc.blur(src, srcBlur, BLUR_SIZE);// 先做模糊
+		Mat srcBlur = new Mat();
+		Imgproc.blur(src, srcBlur, new Size(3, 3));// 先做模糊
 
 		// Canny 算法 ，边缘检测。
-		Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThresh * RATIO, KERNEL_SIZE, false);
+		int lowThresh = 30;
+		Mat detectedEdges = new Mat();
+		Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThresh * 3, 3, false);
 
 		// 膨胀，连接边缘
-		Imgproc.dilate(srcBlur, srcBlur, new Mat(), new Point(-1, -1), 3, 1, new Scalar(1));
-
-		dst = new Mat(src.size(), CvType.CV_8UC1, Scalar.all(0));
-		src.copyTo(dst, detectedEdges);
+		Mat dilate = new Mat();
+		Imgproc.dilate(detectedEdges, dilate, new Mat(), new Point(-1, -1), 3, 1, new Scalar(1));
 
 		Mat hierarchy = new Mat();
 		List<MatOfPoint> contours = new ArrayList<>();// 轮廓
 		// 只提取外部的轮廓。
 		Imgproc.findContours(detectedEdges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-		// 处理轮廓，匹配形状。
-//		processContours(hierarchy, contours);
-
-//	    Imgproc.findContours(detectedEdges, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-
 		System.out.println("contours size: " + contours.size());
+		
+		processContours(src, contours);
+		for (MatOfPoint matOfPoint : contours) {
+			VisualShapePanel.show("ShapePanel", new VisualShape(matOfPoint.toList()));
 
-		for (int i = 0, len = contours.size(); i < len; i++) {// 5 绘制轮廓
-			if (!updated) {
-				VisualShapePanel.show("MatOfPoint", new VisualShape(contours.get(i).toList()));
-			}
-//	        Imgproc.drawContours(src, contours, i, new Scalar(0, 255, 0), 1, Imgproc.LINE_AA);
+			// TODO 根据模型将遮挡物体，补全？
+			
+			// TODO 将轮廓中的点连接起来，用边表示。
+			
+			// TODO 拟合
+			
+
+			// 轮廓逼近
+//			epsilon = 0.01 * cv.arcLength(contours[cnt], True)
+
+			// 轮廓长度
+//			double arcLength = Imgproc.arcLength(new MatOfPoint2f(matOfPoint), true);
+//            approx = cv.approxPolyDP(contours[cnt], epsilon, True)
+//			MatOfPoint2f resultCurve = new MatOfPoint2f();
+//			Imgproc.approxPolyDP(resultCurve, new MatOfPoint2f(matOfPoint), arcLength, true);
+
+//			System.out.println("resultCurve.elemSize(): "+resultCurve.elemSize());
+//			System.out.println("resultCurve.channels(): "+resultCurve.channels());
+
+			// 三条边，就是三角形
+			// 四条边，矩形？
+			// 椭圆
 		}
-		updated = true;
-//	    HighGui.imshow("111", src);
-//	    HighGui.waitKey(0);
 
-		Image img = HighGui.toBufferedImage(dst);
-		imgLabel.setIcon(new ImageIcon(img));
-		frame.repaint();
+//		 Mat dst = new Mat();
+//		dst = new Mat(src.size(), CvType.CV_8UC1, Scalar.all(0));
+//		src.copyTo(dst, detectedEdges);
+
+		HighGui.imshow("ImageShape", detectedEdges);
+		HighGui.waitKey(0);
+		System.exit(0);
 	}
+	
 
 	public Mat processContours(Mat src, List<MatOfPoint> contours) {
 
