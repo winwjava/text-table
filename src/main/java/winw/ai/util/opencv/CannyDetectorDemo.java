@@ -29,7 +29,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualShape;
+import winw.ai.perception.visual.VisualFeature;
 import winw.ai.perception.visual.VisualShapePanel;
 
 public class CannyDetectorDemo {
@@ -138,7 +138,7 @@ public class CannyDetectorDemo {
 
 		for (int i = 0, len = contours.size(); i < len; i++) {// 5 绘制轮廓
 			if (!updated) {
-				VisualShapePanel.show("MatOfPoint", new VisualShape(contours.get(i).toList()));
+				VisualShapePanel.show("MatOfPoint", new VisualFeature(contours.get(i).toList()));
 			}
 //	        Imgproc.drawContours(src, contours, i, new Scalar(0, 255, 0), 1, Imgproc.LINE_AA);
 		}

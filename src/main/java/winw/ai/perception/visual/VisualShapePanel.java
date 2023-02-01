@@ -19,13 +19,13 @@ import org.opencv.core.Point;
 public class VisualShapePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-	protected VisualShape shape;
+	protected VisualFeature shape;
 
-	public VisualShape getShape() {
+	public VisualFeature getShape() {
 		return shape;
 	}
 
-	public void setShape(VisualShape shape) {
+	public void setShape(VisualFeature shape) {
 		this.shape = shape;
 	}
 
@@ -44,12 +44,12 @@ public class VisualShapePanel extends JPanel {
 		for (List<Point> edge : edgeList) {
 //			g.drawPolygon(xPoints, yPoints, nPoints);// 多边形
 //			g.drawPolyline(xPoints, yPoints, nPoints);// 多个线段连接起来
-			g.drawPolygon(VisualShape.getXPoints(edge), VisualShape.getYPoints(edge), edge.size());
+			g.drawPolygon(VisualFeature.getXPoints(edge), VisualFeature.getYPoints(edge), edge.size());
 		}
 
 	}
 
-	public static void show(String title, VisualShape shape) {
+	public static void show(String title, VisualFeature shape) {
 		JFrame frame = new JFrame(title);
 		frame.setVisible(true);
 		JPanel container = new JPanel();
@@ -79,9 +79,9 @@ public class VisualShapePanel extends JPanel {
 		pointList.add(new Point(200.0, 200.0));
 		pointList.add(new Point(100.0, 200.0));
 		pointList.add(new Point(100.0, 100.0));
-		VisualShape visualShape = new VisualShape(pointList);
-		visualShape.affine();
-		VisualShapePanel.show("ShapePanel", new VisualShape(pointList));
+//		VisualShape visualShape = new VisualShape(pointList);
+//		visualShape.affine();
+		VisualShapePanel.show("ShapePanel", new VisualFeature(pointList));
 		
 	}
 

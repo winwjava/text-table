@@ -1,7 +1,11 @@
 package winw.ai.perception.visual;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import winw.ai.model.Graph;
 
@@ -23,8 +27,9 @@ public class RetinaEdge {
 	 */
 	public static int range = 10;// 像素梯度
 
-	public static Graph generateGraph(BufferedImage image) throws IOException {
-		Graph graph = new Graph();
+	public static BufferedImage generateGraph(BufferedImage image) throws IOException {
+//		Graph graph = new Graph();
+		BufferedImage edgeImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_BGR);
 
 		for (int i = image.getMinX(); i < image.getWidth(); i++) {
 			for (int j = image.getMinY(); j < image.getHeight(); j++) {
@@ -43,11 +48,16 @@ public class RetinaEdge {
 
 				// 检查当前像素点与上下左右像素比较，是否是边缘。
 				if (rgbSimilar(rgb, rgbR) || rgbSimilar(rgb, rgbL) || rgbSimilar(rgb, rgbT) || rgbSimilar(rgb, rgbD)) {
-					graph.addNode(i, j);
+
+//					graph.addNode(i, j);
+					
+					edgeImage.setRGB(i, j, 6522);
+				}else {
+					edgeImage.setRGB(i, j, image.getRGB(i, j));
 				}
 			}
 		}
-		return graph;
+		return edgeImage;
 	}
 
 	public static boolean rgbSimilar(int[] a, int[] b) {
@@ -91,15 +101,13 @@ public class RetinaEdge {
 //		return result;
 //	}
 
-//	public static void main(String[] args) throws IOException {
-//
-//		File file = new File("E:\\2016.jpg");
-//		BufferedImage bufferedImage = ImageIO.read(file);
-//		Graph graph = drawEdge(bufferedImage);
-//
-//		FileOutputStream ops = new FileOutputStream(new File("E:\\2016_edge3_" + file.getName()));
-//		ImageIO.write(bufferedImage, "jpg", ops);
-//		ops.flush();
-//		ops.close();
-//	}
+	public static void main(String[] args) throws IOException {
+		File file = new File("E:\\2016.jpg");
+		BufferedImage bufferedImage = ImageIO.read(file);
+		BufferedImage graph = generateGraph(bufferedImage);
+		FileOutputStream ops = new FileOutputStream(new File("E:\\2016_edge4s_" + file.getName()));
+		ImageIO.write(graph, "jpg", ops);
+		ops.flush();
+		ops.close();
+	}
 }

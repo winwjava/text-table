@@ -63,7 +63,7 @@ public class VisualShapeEdgeDemo {
 		
 		processContours(src, contours);
 		for (MatOfPoint matOfPoint : contours) {
-			VisualShapePanel.show("ShapePanel", new VisualShape(matOfPoint.toList()));
+			VisualShapePanel.show("ShapePanel", new VisualFeature(matOfPoint.toList()));
 
 			// TODO 根据模型将遮挡物体，补全？
 			

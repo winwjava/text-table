@@ -14,7 +14,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualShape;
+import winw.ai.perception.visual.VisualFeature;
 import winw.ai.perception.visual.VisualShapePanel;
 
 /**
@@ -149,7 +149,7 @@ class ImageSegmentation {
 			
 			
 			
-			VisualShapePanel.show("MatOfPoint",new VisualShape(contours.get(i).toList()));
+			VisualShapePanel.show("MatOfPoint",new VisualFeature(contours.get(i).toList()));
 		}
 
 		
