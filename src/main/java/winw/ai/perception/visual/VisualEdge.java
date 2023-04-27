@@ -103,39 +103,39 @@ public class VisualEdge {
 		// 感受野同心圆，检测出单根线条、垂直线条、直角。
 
 //		Graph graph = new Graph();
-		BufferedImage edgeImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_BGR);
-
-		for (int i = image.getMinX(); i < image.getWidth(); i++) {
-			for (int j = image.getMinY(); j < image.getHeight(); j++) {
-				// 循环X和Y坐标，逐个像素比较。
-
-				if (i == image.getMinX() || j == image.getMinY() || i == image.getWidth() - 1
-						|| j == image.getHeight() - 1) {
-					continue;// 四条边的像素点不用比较。
-				}
-
-				// 同心圆的 中心区域
-
-				// 同心圆的 圆环区域
-
-				int[] rgb = rgbValue(image.getRGB(i, j));
-				int[] rgbR = rgbValue(image.getRGB(i + 1, j));
-				int[] rgbL = rgbValue(image.getRGB(i - 1, j));
-				int[] rgbT = rgbValue(image.getRGB(i, j + 1));
-				int[] rgbD = rgbValue(image.getRGB(i, j - 1));
-
-				// 明暗对比
-				if (rgbSimilar(rgb, rgbR) || rgbSimilar(rgb, rgbL) || rgbSimilar(rgb, rgbT) || rgbSimilar(rgb, rgbD)) {
-
-//					graph.addNode(i, j);
-
-					edgeImage.setRGB(i, j, 6522);
-				} else {
-					edgeImage.setRGB(i, j, image.getRGB(i, j));
-				}
-			}
-		}
-		return edgeImage;
+//		BufferedImage edgeImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_BGR);
+//
+//		for (int i = image.getMinX(); i < image.getWidth(); i++) {
+//			for (int j = image.getMinY(); j < image.getHeight(); j++) {
+//				// 循环X和Y坐标，逐个像素比较。
+//
+//				if (i == image.getMinX() || j == image.getMinY() || i == image.getWidth() - 1
+//						|| j == image.getHeight() - 1) {
+//					continue;// 四条边的像素点不用比较。
+//				}
+//
+//				// 同心圆的 中心区域
+//
+//				// 同心圆的 圆环区域
+//
+//				int[] rgb = rgbValue(image.getRGB(i, j));
+//				int[] rgbR = rgbValue(image.getRGB(i + 1, j));
+//				int[] rgbL = rgbValue(image.getRGB(i - 1, j));
+//				int[] rgbT = rgbValue(image.getRGB(i, j + 1));
+//				int[] rgbD = rgbValue(image.getRGB(i, j - 1));
+//
+//				// 明暗对比
+//				if (rgbSimilar(rgb, rgbR) || rgbSimilar(rgb, rgbL) || rgbSimilar(rgb, rgbT) || rgbSimilar(rgb, rgbD)) {
+//
+////					graph.addNode(i, j);
+//
+//					edgeImage.setRGB(i, j, 6522);
+//				} else {
+//					edgeImage.setRGB(i, j, image.getRGB(i, j));
+//				}
+//			}
+//		}
+//		return edgeImage;
 
 	}
 
