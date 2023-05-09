@@ -91,7 +91,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 				// 循环X和Y坐标，逐个像素比较。
 				if (finished[i][j] <= 0) {
 					int[][] blob = brightnessReceptiveField(resultImage, image, i, j, radius, finished);
-					blobs[i][j] = new VisualBlobColor(i, j, blob, blurImage.getRGB(i, j));
+					blobs[i][j] = new VisualBlobColor(i, j, radius, radius, blob, blurImage.getRGB(i, j));
 
 //					System.out.println(i + ", " + j + ": " + blurImage.getRGB(i, j));
 
@@ -104,37 +104,13 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		// 相似颜色，并且相邻区域则合并成更大的区域。
 		for (int m = 0; m < blobs.length; m++) {
 			for (int n = 0; n < blobs[m].length; n++) {
+				if (mergeCount > 11500) {
+					break;
+				}
 				total++;
 				VisualBlobColor colorBlob = blobs[m][n];
-				if (colorBlob != null) {// 找到一个中心点
-					notnull++;
-//					System.out.println(colorBlob.getX0() + ", " + colorBlob.getY0() + ": " + colorBlob.getColor());
-
-					int[][] blob = colorBlob.getBlob();
-
-					for (int j = 0; j < blob.length; j++) {// 从左向右，找到左边界
-						for (int k = 0; k < blob[j].length; k++) {// 从上往下找到边界。
-							if (blob[j][k] == 1) {// 说明是边界，则向左查找合并相同颜色区域。
-								// 向左查找
-								for (int x = j; m - x > 0; x++) {
-//									System.out.println(image.getHeight() +", getHeight: "+(n + k));
-									VisualBlobColor neighbor = blobs[m - x][n - radius + k];// Y轴不变 - radius + k
-
-//									System.out.println(image.getWidth() +", "+m + x);
-									if (neighbor != null && rgbSimilar(colorBlob.getColor(), neighbor.getColor())) {
-										// 相邻，并且颜色相似，可以合并。
-										System.out.println("相邻，并且颜色相似，可以合并。");
-
-										// 向左合并
-										int[][] mergeBlob = mergeBlob(neighbor.getX0(), neighbor.getY0(),
-												neighbor.getBlob(), m, n, blob);
-										neighbor.setBlob(mergeBlob);
-										blobs[m][n] = null;
-									}
-								}
-							}
-						}
-					}
+				if (colorBlob != null) {
+					searchNeighborBlob(blobs, m, n, colorBlob);
 				}
 
 				// 向右扫描 1个感受野半径
@@ -171,14 +147,126 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		return resultImage;
 	}
 
-	public static int[][] mergeBlob(int x0, int y0, int[][] blob, int rightX0, int rightY0, int[][] rightBlob) {
+	static int mergeCount = 0;
+
+	private static void searchNeighborBlob(VisualBlobColor[][] blobs, int m, int n, VisualBlobColor colorBlob) {
+		// 找到一个中心点
+//					notnull++;
+//					System.out.println(colorBlob.getX0() + ", " + colorBlob.getY0() + ": " + colorBlob.getColor());
+
+		int[][] blob = colorBlob.getBlob();
+
+		for (int j = 0; j < blob.length; j++) {// 从右向左，找到左边界
+			for (int k = 0; k < blob[j].length && n - k > 0; k++) {// TODO 从上往下
+				if (blob[j][k] == 1) {// 说明是边界
+					for (int x = j; m - x > 0; x++) {// 向左查找合并相同颜色区域。
+						// TODO 这个中心点不一定在n - radius + k
+						VisualBlobColor neighbor = blobs[m - x][n];// Y轴不变 - radius + k
+						if (neighbor != null && rgbSimilar(colorBlob.getColor(), neighbor.getColor())) {
+							System.out.println("相邻，并且颜色相似，可以合并。");
+							// 向左合并
+							VisualBlobColor mergeBlob = mergeBlob(neighbor, colorBlob);
+//										neighbor.setBlob(mergeBlob);
+							blobs[m - x][n] = null;
+							blobs[neighbor.getX0()][neighbor.getY0()] = null;
+							blobs[m][n] = null;
+							blobs[mergeBlob.getX0()][mergeBlob.getY0()] = mergeBlob;
+							mergeCount++;
+							return;
+						}
+					}
+
+				}
+			}
+		}
+	}
+
+	public static VisualBlobColor mergeBlob(VisualBlobColor blob, VisualBlobColor rightBlob) {// int x0, int y0, int[][]
+																								// blob,
+		// int rightX0, int rightY0,
+		// int[][] rightBlob
+		VisualBlobColor result = new VisualBlobColor();
+		result.setX0(blob.getX0());
+		result.setY0(blob.getY0());
+		result.setColor(blob.getColor());
+		result.setxOffset(blob.getxOffset());
+
+		// 如果rightBlob在右上方
+		int yOffsetDiff = (rightBlob.getY0() - rightBlob.getyOffset()) - (blob.getY0() - blob.getyOffset());
+		yOffsetDiff = yOffsetDiff > 0 ? yOffsetDiff : 0;
+		int rightYDiff = yOffsetDiff > 0 ? 0 : -yOffsetDiff; // 向下偏移
+
+		result.setyOffset(blob.getyOffset() + yOffsetDiff);
+
+		// TODO 不规则区域，需要重新计算，中心点不一定在中心，需要看中心点的上下左右分别有多少像素。
+
+//		int xLength =  blob.getBlob().length + rightBlob.getBlob().length;
+		int xLength = blob.getxOffset() + Math.abs(rightBlob.getX0() - blob.getX0()) + rightBlob.getBlob().length
+				- rightBlob.getxOffset();
+		// - Math.abs(rightBlob.getX0() - blob.getX0());// 中间刚好没有重叠的情况
+
+		// 有可能右边的Y0 比左边高，并且相对高度不在（10，10）
+		int yLength = blob.getyOffset() + Math.abs(rightBlob.getY0() - blob.getY0()) + rightBlob.getBlob()[0].length
+				- rightBlob.getyOffset();// + rightBlob.getBlob()[0].length - Math.abs(rightBlob.getY0() -
+												// blob.getY0());
+//		int yLength = blob.getyOffset() + Math.abs(rightBlob.getY0() - blob.getY0()) + radius + 323;
+
+		System.out.println("yOffsetDiff: " + yOffsetDiff);
+		System.out.println(blob.getX0() + "," + blob.getY0() + " |" + rightBlob.getX0() + "," + rightBlob.getY0());
+		System.out.println(blob.getBlob().length + "*" + blob.getBlob()[0].length + " + " + rightBlob.getBlob().length
+				+ "*" + rightBlob.getBlob()[0].length + "-->" + xLength + "*" + yLength);
+		int[][] merged = new int[xLength][yLength];
+
+		// TODO 重新计算OFFSET和中心点
+
+		// 中心点(x0,y0)以blob的(x0,y0)为准。
+
+		// 将blob复制进来，考虑Y的OFFSET
+
+		try {
+			for (int m = 0; m < blob.getBlob().length; m++) {
+				for (int n = 0; n < blob.getBlob()[m].length; n++) {
+					if (blob.getBlob()[m][n] > 0) {
+						merged[m][n + yOffsetDiff] = blob.getBlob()[m][n];
+					}
+				}
+			}
+		} catch (Exception e1) {
+			System.out.println(e1.getMessage());
+		}
+
+		// TODO 向左合并，向上合并
+
+		// 将右边的blob复制进来
+		for (int m = 0; m < rightBlob.getBlob().length; m++) {
+			for (int n = 0; n < rightBlob.getBlob()[m].length; n++) {
+				if (rightBlob.getBlob()[m][n] > 0) {
+					try {
+						merged[rightBlob.getX0() - blob.getX0() + m][n + rightYDiff] = rightBlob.getBlob()[m][n];
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+//						System.out.println(m + ", " + n + " ->" + (rightX0 - x0 + m) + "," + (rightY0 - y0 + n));
+//						System.out.println(rightY0 + " : " + y0);
+						// throw e;
+					}
+				}
+			}
+		}
+		result.setBlob(merged);
+		return result;
+	}
+
+	public static int[][] mergeUpBlob(int x0, int y0, int[][] blob, int downX0, int downY0, int[][] downBlob) {
 		// 合并到右边
 		// 总宽度，总高度
 		// 中心点是（radius，radius）
 
 		// TODO 不规则区域，需要重新计算，中心点不一定在中心，需要看中心点的上下左右分别有多少像素。
-		int xLength = radius + Math.abs(rightX0 - x0) + radius + 1;
-		int yLength = radius + Math.abs(rightY0 - y0) + radius + 1;
+		int xLength = radius + Math.abs(downX0 - x0) + radius + 1;
+
+		// 有可能右边的Y0 比左边高，并且相对高度不在（10，10）
+		int yLength = radius + Math.abs(downY0 - y0) + radius + 1;
 
 		int[][] merged = new int[xLength][yLength];
 
@@ -191,17 +279,17 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 			}
 		}
 
-		// 将右边的blob复制进来
-		for (int m = 0; m < rightBlob.length; m++) {
-			for (int n = 0; n < rightBlob[m].length; n++) {
-				if (rightBlob[m][n] > 0) {
+		// 将下边的blob复制进来
+		for (int m = 0; m < downBlob.length; m++) {
+			for (int n = 0; n < downBlob[m].length; n++) {
+				if (downBlob[m][n] > 0) {
 					try {
-						merged[rightX0 - x0 + m][rightY0 - y0 + n] = rightBlob[m][n];
+						merged[downX0 - x0 + m][downY0 - y0 + n] = downBlob[m][n];
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-						System.out.println(m + ", " + n + " ->" + (rightX0 - x0 + m) + "," + (rightY0 - y0 + n));
-						System.out.println(rightY0 +" : "+y0);
+						System.out.println(m + ", " + n + " ->" + (downX0 - x0 + m) + "," + (downY0 - y0 + n));
+						System.out.println(downY0 + " : " + y0);
 						throw e;
 					}
 				}
