@@ -5,8 +5,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
@@ -90,216 +94,136 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 			for (int j = image.getMinY() + radius + 1; j < image.getHeight() - radius - 1; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (finished[i][j] <= 0) {
-					int[][] blob = brightnessReceptiveField(resultImage, image, i, j, radius, finished);
-					blobs[i][j] = new VisualBlobColor(i, j, radius, radius, blob, blurImage.getRGB(i, j));
 
-//					System.out.println(i + ", " + j + ": " + blurImage.getRGB(i, j));
-
+					int[][] blob = brightnessReceptiveField(resultImage, image, blobs, i, j, radius, finished);
+//					blobs[i][j] = new VisualBlobColor(i, j, radius, radius, blob, blurImage.getRGB(i, j));
 				}
 			}
 		}
 
-		int total = 0, notnull = 0;
-		// TODO 将斑块区 合并为条纹区
-		// 相似颜色，并且相邻区域则合并成更大的区域。
-		for (int m = 0; m < blobs.length; m++) {
-			for (int n = 0; n < blobs[m].length; n++) {
-				if (mergeCount > 11500) {
-					break;
-				}
-				total++;
-				VisualBlobColor colorBlob = blobs[m][n];
-				if (colorBlob != null) {
-					searchNeighborBlob(blobs, m, n, colorBlob);
+		// TODO 把颜色感受野合并为斑块区：相似颜色，并且相邻区域则合并成更大的区域。
+
+		int degree = 3;// 把视野分为20*20份，每一个空间频率里去分辨合并颜色；
+		List<Set<VisualBlobColor>> blobList = new ArrayList<Set<VisualBlobColor>>();
+
+		// 8, point: 171,91
+
+		Set<VisualBlobColor> repeatSet = new HashSet<VisualBlobColor>();
+		for (int m = 0; m < blobs.length; m += degree) {
+			for (int n = 0; n < blobs[0].length; n += degree) {
+				VisualBlobColor blob = blobs[m][n];
+
+				if (blob == null) {
+					continue;
 				}
 
-				// 向右扫描 1个感受野半径
+				Set<VisualBlobColor> blobSet = new HashSet<VisualBlobColor>();
+				List<VisualBlobColor> waitSet = new ArrayList<VisualBlobColor>();
+				blobList.add(blobSet);
+				waitSet.add(blob);
 
-				// 从左向右，从上向下 遍历。
-				// 把所有
-				// 向右合并？向下合并
+				while (waitSet.size() > 0) {
+					VisualBlobColor temp = waitSet.remove(0);
+					if (temp != null && !repeatSet.contains(temp)) {
+						blobSet.add(temp);
+						repeatSet.add(temp);
+						searchNeighborBlob(blobs, repeatSet, blobSet, waitSet, temp);
+					}
+				}
+
+//				VisualBlobColor max = blob;
+//				for (VisualBlobColor visualBlobColor : blobSet) {
+//					if (visualBlobColor.getX0() > max.getX0()) {
+//						max = visualBlobColor;
+//					}
+//				}
+				if (blobSet.size() > 1) {
+					System.out.println(blobSet.size() + ", point: " + m + "," + n);
+				}
 			}
 		}
-		System.out.println(total + ", notnull: " + notnull);
+		System.out.println(blobList.size());
 
 		for (int j = 0; j < blobs.length; j++) {
 			for (int k = 0; k < blobs[j].length; k++) {
-
 				VisualBlobColor colorBlob = blobs[j][k];
 				if (colorBlob != null) {// 找到一个中心点
-
-					int[][] blob = colorBlob.getBlob();
+					int[][] blobArray = colorBlob.getBlob();
 					Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
-					for (int m = 0; m < blob.length; m++) {
-						for (int n = 0; n < blob[m].length; n++) {
-							if (blob[m][n] > 0) {
-//								resultImage.setRGB(x0 - radius + m, y0 - radius + n, rgb);
+					for (int m = 0; m < blobArray.length; m++) {
+						for (int n = 0; n < blobArray[m].length; n++) {
+							if (blobArray[m][n] > 0) {
 								resultImage.setRGB(colorBlob.getX0() - radius + m, colorBlob.getY0() - radius + n,
 										randomColor.getRGB());
 							}
 						}
 					}
-
 				}
 			}
+		}
+
+		for (Set<VisualBlobColor> blobSet : blobList) {
+//			Color randomColor = new Color(0,255, 255);
+			Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
+			for (VisualBlobColor colorBlob : blobSet) {
+				int[][] blobArray = colorBlob.getBlob();
+				for (int m = 0; m < blobArray.length; m++) {
+					for (int n = 0; n < blobArray[m].length; n++) {
+						if (blobArray[m][n] > 0) {
+							resultImage.setRGB(colorBlob.getX0() - radius + m, colorBlob.getY0() - radius + n,
+									randomColor.getRGB());
+						}
+					}
+				}
+			}
+
 		}
 
 		return resultImage;
 	}
 
-	static int mergeCount = 0;
-
-	private static void searchNeighborBlob(VisualBlobColor[][] blobs, int m, int n, VisualBlobColor colorBlob) {
-		// 找到一个中心点
-//					notnull++;
-//					System.out.println(colorBlob.getX0() + ", " + colorBlob.getY0() + ": " + colorBlob.getColor());
+	private static void searchNeighborBlob(VisualBlobColor[][] blobs, Set<VisualBlobColor> repeatSet,
+			Set<VisualBlobColor> blobSet, List<VisualBlobColor> waitSet, VisualBlobColor colorBlob) {
 
 		int[][] blob = colorBlob.getBlob();
+		for (int x = 0; x < blob.length; x++) {
+			for (int y = 0; y < blob[0].length; y++) {
+				VisualBlobColor neighbor = null;
+				if (x == radius && y == radius) {
+				} else if (x == 0 && blob[x][y] == 1 && colorBlob.getX0() - radius + x - 1 >= 0) {// 左边界
+					neighbor = blobs[colorBlob.getX0() - radius + x - 1][colorBlob.getY0() - radius + y];
+				} else if (x == blob.length - 1 && blob[x][y] == 1
+						&& colorBlob.getX0() - radius + x + 2 < blobs.length) {// 右边界
+					neighbor = blobs[colorBlob.getX0() - radius + x + 1][colorBlob.getY0() - radius + y];
+				} else if (y == 0 && blob[x][y] == 1 && colorBlob.getY0() - radius + y - 1 > 0) {// 上边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y - 1];
+				} else if (y == blob[0].length - 1 && blob[x][y] == 1
+						&& colorBlob.getY0() - radius + y + 1 > blobs[0].length) {// 下边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y + 1];
+				} else if (x - 1 > 0 && blob[x][y] == 0 && blob[x - 1][y] == 1) {// 右边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y];
+				} else if (x + 1 < blob.length && blob[x][y] == 0 && blob[x + 1][y] == 1) {// 左边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y];
+				} else if (y - 1 > 0 && blob[x][y] == 0 && blob[x][y - 1] == 1) {// 上边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y];
+				} else if (y + 1 < blob[0].length && blob[x][y] == 0 && blob[x][y + 1] == 0) {// 下边界
+					neighbor = blobs[colorBlob.getX0() - radius + x][colorBlob.getY0() - radius + y];
+				}
 
-		for (int j = 0; j < blob.length; j++) {// 从右向左，找到左边界
-			for (int k = 0; k < blob[j].length && n - k > 0; k++) {// TODO 从上往下
-				if (blob[j][k] == 1) {// 说明是边界
-					for (int x = j; m - x > 0; x++) {// 向左查找合并相同颜色区域。
-						// TODO 这个中心点不一定在n - radius + k
-						VisualBlobColor neighbor = blobs[m - x][n];// Y轴不变 - radius + k
-						if (neighbor != null && rgbSimilar(colorBlob.getColor(), neighbor.getColor())) {
-							System.out.println("相邻，并且颜色相似，可以合并。");
-							// 向左合并
-							VisualBlobColor mergeBlob = mergeBlob(neighbor, colorBlob);
-//										neighbor.setBlob(mergeBlob);
-							blobs[m - x][n] = null;
-							blobs[neighbor.getX0()][neighbor.getY0()] = null;
-							blobs[m][n] = null;
-							blobs[mergeBlob.getX0()][mergeBlob.getY0()] = mergeBlob;
-							mergeCount++;
-							return;
-						}
-					}
-
+				if (neighbor != null && neighbor != colorBlob && !blobSet.contains(neighbor)
+						&& !repeatSet.contains(neighbor) && rgbSimilar(colorBlob.getColor(), neighbor.getColor())) {
+//					blobSet.add(neighbor);
+//					repeatSet.add(neighbor);
+					waitSet.add(neighbor);
+					// 递归的太多会栈溢出
+//					searchNeighborBlob(blobs, repeatSet, blobSet, neighbor);
 				}
 			}
 		}
 	}
 
-	public static VisualBlobColor mergeBlob(VisualBlobColor blob, VisualBlobColor rightBlob) {// int x0, int y0, int[][]
-																								// blob,
-		// int rightX0, int rightY0,
-		// int[][] rightBlob
-		VisualBlobColor result = new VisualBlobColor();
-		result.setX0(blob.getX0());
-		result.setY0(blob.getY0());
-		result.setColor(blob.getColor());
-		result.setxOffset(blob.getxOffset());
-
-		// 如果rightBlob在右上方
-		int yOffsetDiff = (rightBlob.getY0() - rightBlob.getyOffset()) - (blob.getY0() - blob.getyOffset());
-		yOffsetDiff = yOffsetDiff > 0 ? yOffsetDiff : 0;
-		int rightYDiff = yOffsetDiff > 0 ? 0 : -yOffsetDiff; // 向下偏移
-
-		result.setyOffset(blob.getyOffset() + yOffsetDiff);
-
-		// TODO 不规则区域，需要重新计算，中心点不一定在中心，需要看中心点的上下左右分别有多少像素。
-
-//		int xLength =  blob.getBlob().length + rightBlob.getBlob().length;
-		int xLength = blob.getxOffset() + Math.abs(rightBlob.getX0() - blob.getX0()) + rightBlob.getBlob().length
-				- rightBlob.getxOffset();
-		// - Math.abs(rightBlob.getX0() - blob.getX0());// 中间刚好没有重叠的情况
-
-		// 有可能右边的Y0 比左边高，并且相对高度不在（10，10）
-		int yLength = blob.getyOffset() + Math.abs(rightBlob.getY0() - blob.getY0()) + rightBlob.getBlob()[0].length
-				- rightBlob.getyOffset();// + rightBlob.getBlob()[0].length - Math.abs(rightBlob.getY0() -
-												// blob.getY0());
-//		int yLength = blob.getyOffset() + Math.abs(rightBlob.getY0() - blob.getY0()) + radius + 323;
-
-		System.out.println("yOffsetDiff: " + yOffsetDiff);
-		System.out.println(blob.getX0() + "," + blob.getY0() + " |" + rightBlob.getX0() + "," + rightBlob.getY0());
-		System.out.println(blob.getBlob().length + "*" + blob.getBlob()[0].length + " + " + rightBlob.getBlob().length
-				+ "*" + rightBlob.getBlob()[0].length + "-->" + xLength + "*" + yLength);
-		int[][] merged = new int[xLength][yLength];
-
-		// TODO 重新计算OFFSET和中心点
-
-		// 中心点(x0,y0)以blob的(x0,y0)为准。
-
-		// 将blob复制进来，考虑Y的OFFSET
-
-		try {
-			for (int m = 0; m < blob.getBlob().length; m++) {
-				for (int n = 0; n < blob.getBlob()[m].length; n++) {
-					if (blob.getBlob()[m][n] > 0) {
-						merged[m][n + yOffsetDiff] = blob.getBlob()[m][n];
-					}
-				}
-			}
-		} catch (Exception e1) {
-			System.out.println(e1.getMessage());
-		}
-
-		// TODO 向左合并，向上合并
-
-		// 将右边的blob复制进来
-		for (int m = 0; m < rightBlob.getBlob().length; m++) {
-			for (int n = 0; n < rightBlob.getBlob()[m].length; n++) {
-				if (rightBlob.getBlob()[m][n] > 0) {
-					try {
-						merged[rightBlob.getX0() - blob.getX0() + m][n + rightYDiff] = rightBlob.getBlob()[m][n];
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-//						System.out.println(m + ", " + n + " ->" + (rightX0 - x0 + m) + "," + (rightY0 - y0 + n));
-//						System.out.println(rightY0 + " : " + y0);
-						// throw e;
-					}
-				}
-			}
-		}
-		result.setBlob(merged);
-		return result;
-	}
-
-	public static int[][] mergeUpBlob(int x0, int y0, int[][] blob, int downX0, int downY0, int[][] downBlob) {
-		// 合并到右边
-		// 总宽度，总高度
-		// 中心点是（radius，radius）
-
-		// TODO 不规则区域，需要重新计算，中心点不一定在中心，需要看中心点的上下左右分别有多少像素。
-		int xLength = radius + Math.abs(downX0 - x0) + radius + 1;
-
-		// 有可能右边的Y0 比左边高，并且相对高度不在（10，10）
-		int yLength = radius + Math.abs(downY0 - y0) + radius + 1;
-
-		int[][] merged = new int[xLength][yLength];
-
-		// 将blob复制进来
-		for (int m = 0; m < blob.length; m++) {
-			for (int n = 0; n < blob[m].length; n++) {
-				if (blob[m][n] > 0) {
-					merged[m][n] = blob[m][n];
-				}
-			}
-		}
-
-		// 将下边的blob复制进来
-		for (int m = 0; m < downBlob.length; m++) {
-			for (int n = 0; n < downBlob[m].length; n++) {
-				if (downBlob[m][n] > 0) {
-					try {
-						merged[downX0 - x0 + m][downY0 - y0 + n] = downBlob[m][n];
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						System.out.println(m + ", " + n + " ->" + (downX0 - x0 + m) + "," + (downY0 - y0 + n));
-						System.out.println(downY0 + " : " + y0);
-						throw e;
-					}
-				}
-			}
-		}
-		return merged;
-	}
-
-	public static int[][] brightnessReceptiveField(BufferedImage resultImage, BufferedImage blurImage, int x0, int y0,
-			int radius, int[][] finished) {// 视网膜上的视锥细胞只是采集了颜色。
+	public static int[][] brightnessReceptiveField(BufferedImage resultImage, BufferedImage blurImage,
+			VisualBlobColor[][] blobs, int x0, int y0, int radius, int[][] finished) {// 视网膜上的视锥细胞只是采集了颜色。
 
 		// 斑块（Blobs）由若干个不等长的长条组合而成。
 		// 类似卷积的方式。
@@ -311,6 +235,8 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		int g = (rgb & 0xff00) >> 8;
 		int b = (rgb & 0xff);
 		int[][] blob = new int[radius + radius][radius + radius];// 中心点是（radius，radius）
+		VisualBlobColor blobColor = new VisualBlobColor(x0, y0, radius, radius, blurImage.getRGB(x0, y0));
+		blobColor.setBlob(blob);
 
 		// 向4个象限扩大。
 		// 第一象限，右上
@@ -322,6 +248,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 
 					finished[x0 + m][y0 - n] = 1;// 已经检测
 					blob[radius + m][radius - n] = 1;// 与中心点颜色相同
+					blobs[x0 + m][y0 - n] = blobColor;
 				} else {// 发现色差，跳出整个循环
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -340,6 +267,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 				if (rgbSimilar(blurImage.getRGB(x0 - m, y0 - n), r, g, b)) {
 					finished[x0 - m][y0 - n] = 1;// 已经检测
 					blob[radius - m][radius - n] = 1;// 与中心点颜色相同
+					blobs[x0 - m][y0 - n] = blobColor;
 				} else {
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -358,6 +286,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 				if (rgbSimilar(blurImage.getRGB(x0 - m, y0 + n), r, g, b)) {
 					finished[x0 - m][y0 + n] = 1;// 已经检测
 					blob[radius - m][radius + n] = 1;// 与中心点颜色相同
+					blobs[x0 - m][y0 + n] = blobColor;
 				} else {
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -376,6 +305,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 				if (rgbSimilar(blurImage.getRGB(x0 + m, y0 + n), r, g, b)) {
 					finished[x0 + m][y0 + n] = 1;// 已经检测
 					blob[radius + m][radius + n] = 1;// 与中心点颜色相同
+					blobs[x0 + m][y0 + n] = blobColor;
 				} else {// 发现色差，跳出循环
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -392,10 +322,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		// 各种单色光是最饱和的色彩，对于人的视觉，每种色彩的饱和度可分为20个可分辨等级。
 		// 纯的颜色都是高度饱和的，如鲜红，鲜绿。混杂上白色，灰色或其他色调的颜色，是不饱和的颜色，如绛紫，粉红，黄褐等。完全不饱和的颜色根本没有色调，如黑白之间的各种灰色。
 
-		if (rgb == 0 || rgbSimilar(rgb, 255, 255, 255)) {// 透明或白色
+//		if (rgb == 0 || rgbSimilar(rgb, 255, 255, 255)) {// 透明或白色
 //			System.out.println(x0 + ", " + y0 + ": " + rgb);
 //			resultImage.setRGB(x0, y0, -66055);
-		} else {
+//		} else {
 //			Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
 //			for (int m = 0; m < blob.length; m++) {
 //				for (int n = 0; n < blob[m].length; n++) {
@@ -404,7 +334,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 //					}
 //				}
 //			}
-		}
+//		}
 		return blob;
 	}
 

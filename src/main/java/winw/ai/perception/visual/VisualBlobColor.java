@@ -23,13 +23,12 @@ public class VisualBlobColor {// 根据左边的点和上边的点合并
 		this.color = color;
 	}
 
-	public VisualBlobColor(int x0, int y0, int xOffset, int yOffset, int[][] blob, int color) {
+	public VisualBlobColor(int x0, int y0, int xOffset, int yOffset, int color) {
 		super();
 		this.x0 = x0;
 		this.y0 = y0;
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
-		this.blob = blob;
 		this.color = color;
 	}
 
