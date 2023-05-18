@@ -1,5 +1,13 @@
 package winw.ai.perception.visual;
 
+/**
+ *  TODO 带阴影或光线不均衡，或者亮度差异，直方图均衡化处理
+ *  
+ *  <p> winwgaze
+ * 
+ * @author winw
+ *
+ */
 public class VisualBlobColor {// 根据左边的点和上边的点合并
 	private int x0;
 	private int y0;

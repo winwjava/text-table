@@ -94,8 +94,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 			for (int j = image.getMinY() + radius + 1; j < image.getHeight() - radius - 1; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (finished[i][j] <= 0) {
-
-					int[][] blob = brightnessReceptiveField(resultImage, image, blobs, i, j, radius, finished);
+					brightnessReceptiveField(resultImage, image, blobs, i, j, radius, finished);
 //					blobs[i][j] = new VisualBlobColor(i, j, radius, radius, blob, blurImage.getRGB(i, j));
 				}
 			}
@@ -222,7 +221,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		}
 	}
 
-	public static int[][] brightnessReceptiveField(BufferedImage resultImage, BufferedImage blurImage,
+	public static void brightnessReceptiveField(BufferedImage resultImage, BufferedImage blurImage,
 			VisualBlobColor[][] blobs, int x0, int y0, int radius, int[][] finished) {// 视网膜上的视锥细胞只是采集了颜色。
 
 		// 斑块（Blobs）由若干个不等长的长条组合而成。
@@ -230,6 +229,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 
 		// 以感受野中心，向四周扩散到每一度空间的最大范围，并标出这个颜色。
 
+		int count = 0;// 同色像素计数
 		int rgb = blurImage.getRGB(x0, y0);// 中心
 		int r = (rgb & 0xff0000) >> 16;
 		int g = (rgb & 0xff00) >> 8;
@@ -245,10 +245,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		for (int m = 0; m < radius; m++) {
 			for (int n = 0; n < radius; n++) {
 				if (rgbSimilar(blurImage.getRGB(x0 + m, y0 - n), r, g, b)) {
-
+					count++;
 					finished[x0 + m][y0 - n] = 1;// 已经检测
 					blob[radius + m][radius - n] = 1;// 与中心点颜色相同
-					blobs[x0 + m][y0 - n] = blobColor;
+//					blobs[x0 + m][y0 - n] = blobColor;
 				} else {// 发现色差，跳出整个循环
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -265,9 +265,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		for (int m = 0; m < radius; m++) {
 			for (int n = 0; n < radius; n++) {
 				if (rgbSimilar(blurImage.getRGB(x0 - m, y0 - n), r, g, b)) {
+					count++;
 					finished[x0 - m][y0 - n] = 1;// 已经检测
 					blob[radius - m][radius - n] = 1;// 与中心点颜色相同
-					blobs[x0 - m][y0 - n] = blobColor;
+//					blobs[x0 - m][y0 - n] = blobColor;
 				} else {
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -284,9 +285,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		for (int m = 0; m < radius; m++) {
 			for (int n = 0; n < radius; n++) {
 				if (rgbSimilar(blurImage.getRGB(x0 - m, y0 + n), r, g, b)) {
+					count++;
 					finished[x0 - m][y0 + n] = 1;// 已经检测
 					blob[radius - m][radius + n] = 1;// 与中心点颜色相同
-					blobs[x0 - m][y0 + n] = blobColor;
+//					blobs[x0 - m][y0 + n] = blobColor;
 				} else {
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -303,9 +305,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		for (int m = 0; m < radius; m++) {
 			for (int n = 0; n < radius; n++) {
 				if (rgbSimilar(blurImage.getRGB(x0 + m, y0 + n), r, g, b)) {
+					count++;
 					finished[x0 + m][y0 + n] = 1;// 已经检测
 					blob[radius + m][radius + n] = 1;// 与中心点颜色相同
-					blobs[x0 + m][y0 + n] = blobColor;
+//					blobs[x0 + m][y0 + n] = blobColor;
 				} else {// 发现色差，跳出循环
 //					System.out.println(x0 + ", " + y0 + ": " + rgb + ", (" + m + "," + n + "): "
 //							+ blurImage.getRGB(x0 + m, y0 - n));
@@ -318,6 +321,17 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 			}
 		}
 
+		if (count <= 15) {// TODO 小于5个的blob过滤掉，避免在大量非块区域形成非必要的计算
+//			System.out.println("blob less than 5: " + count);
+			return;
+		}
+		for (int m = 0; m < blob.length; m++) {
+			for (int n = 0; n < blob[m].length; n++) {
+				if (blob[m][n] > 0) {
+					blobs[x0 - radius + m][y0 - radius + n] = blobColor;
+				}
+			}
+		}
 		// TODO 考虑颜色饱和度（饱和度取决于该色中含色成分和消色成分（灰色）的比例，含色成分越大，饱和度越大；）
 		// 各种单色光是最饱和的色彩，对于人的视觉，每种色彩的饱和度可分为20个可分辨等级。
 		// 纯的颜色都是高度饱和的，如鲜红，鲜绿。混杂上白色，灰色或其他色调的颜色，是不饱和的颜色，如绛紫，粉红，黄褐等。完全不饱和的颜色根本没有色调，如黑白之间的各种灰色。
@@ -335,7 +349,6 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 //				}
 //			}
 //		}
-		return blob;
 	}
 
 	/**
@@ -395,21 +408,18 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	/**
 	 * 像素RGB值大于30，则认为是边缘。
 	 */
-	public static int RANGE = 10;// 像素梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
+	public static int RANGE = 8;// 像素梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
 
 	public static int radius = 10;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static void main(String[] args) throws IOException {
+		BufferedImage result = brightnessReceptiveField(ImageIO.read(new File("E:\\201502201529.jpg")));
+		FileOutputStream output = new FileOutputStream(new File("E:\\201502201529-blob.jpg"));
+		ImageIO.write(result, "jpg", output);
+		output.flush();
+		output.close();
 
-		File file = new File("E:\\ww.png");
-		BufferedImage image = ImageIO.read(file);
-
-		BufferedImage bufferedImage = brightnessReceptiveField(image);
-
-		FileOutputStream ops = new FileOutputStream(new File("E:\\blob-ww.png"));
-		ImageIO.write(bufferedImage, "png", ops);
-		ops.flush();
-		ops.close();
+		// TODO 如果两个blob之间差异不大，但存在边缘，则强化这个边缘两侧blob的对比度。
 	}
 
 }
