@@ -14,11 +14,6 @@
 
 
 ##强化学习
-人脑的主要学习方式是强化学习，通过基底核、海马体和大脑皮层实现，这已经被神经科学所证实。人工智能的专家们对强化学习已经有了很多研究和应用，DeepMind 发表过一篇深度增强学习的著名文章： Human-level control through deep reinforcement learning，下图比较直观的表示了机器如何通过强化学习变得更加智能。
-
-<img width="400px" src="./docs/RL.png"><br/>
-<!--img width="500px" src="./docs/monkey-memory.png"-->
-图1：强化学习中主体（Agent）与环境（Environment）的关系
 
 大脑中的多巴胺对学习记忆以及运动控制至关重要。在多巴胺与学习记忆方面，剑桥大学的Schultz等人在1997年提出了多巴胺的“奖赏预测误差假说 (reward prediction error hypothesis)”，提出多巴胺在巴甫洛夫条件反射式学习期间编码刺激-奖赏预测误差，即实际奖赏与基于该刺激的预期奖赏之间的差异。该理论已被拓展并广泛应用于有关动作抉择的强化学习。
 
@@ -26,11 +21,18 @@ Model-free RL是一种常见的强化学习算法。model-free RL主要依赖fro
 
 <img width="600px" src="./docs/Dopamine-RL0.png">
 
-图2：强化学习所依赖的神经机制（简易版），图片来自(Neftci &Averbeck, 2019)
+图1：强化学习所依赖的神经机制（简易版），图片来自(Neftci &Averbeck, 2019)
 
 <img width="600px" src="./docs/Dopamine-RL1.png">
 
-图3：强化学习所依赖的神经机制细致版，其中，用红线表示解剖连接的左图为与腹侧纹状体相连的网络，负责与感知信息相关的价值处理过程。右图为与背侧纹状体相连的网络，负责与空间-认知过程（spatial-cognitive process）相关的价值处理（例如，眼动）。图中所示的只是参与RL过程的部分脑区，并非全部（例如，海马体也参与了该过程）。MD: medial-dorsal thalamus； GPe/GPi: globus pallidus external and internal segments。图片来自(Neftci &Averbeck, 2019)。
+图2：强化学习所依赖的神经机制细致版，其中，用红线表示解剖连接的左图为与腹侧纹状体相连的网络，负责与感知信息相关的价值处理过程。右图为与背侧纹状体相连的网络，负责与空间-认知过程（spatial-cognitive process）相关的价值处理（例如，眼动）。图中所示的只是参与RL过程的部分脑区，并非全部（例如，海马体也参与了该过程）。MD: medial-dorsal thalamus； GPe/GPi: globus pallidus external and internal segments。图片来自(Neftci &Averbeck, 2019)。
+
+人脑的主要学习方式是强化学习，通过基底核、海马体和大脑皮层实现，这已经被神经科学所证实。人工智能的专家们对强化学习已经有了很多研究和应用，DeepMind 发表过一篇深度增强学习的著名文章： Human-level control through deep reinforcement learning，下图比较直观的表示了机器如何通过强化学习变得更加智能。
+
+<img width="400px" src="./docs/RL.png"><br/>
+<!--img width="500px" src="./docs/monkey-memory.png"-->
+图3：强化学习中主体（Agent）与环境（Environment）的关系
+
 
 http://news.cctv.com/world/20071205/100041.shtml  
 http://life.ecnu.edu.cn/da/73/c18135a383603/page.htm  
@@ -242,8 +244,11 @@ http://www.ziint.zju.edu.cn/index.php/event/details.html?tid=415
 
 通过双眼视差，在大脑中构成三维模型，<span style="color:red;font-size:26px">三维模型的拓扑不变量（颜色可变、形状可变、大小可变、方向可变）的特征比对是物体识别的关键。</span>
 
+##图像识别
+通过已经认知的三维模型，与当前视野的物体模型比对，或者二维投影比对，这样可以得到90%像猫或者70%像狗的一个物体识别的置信度。现在人工智能流行的方式是深度卷积算法，例如CNN、AlexNet、YoLoV5等。
+
 ##图像理解
-图像理解是一个“猜测与印证”的过程，有强化学习、抉择系统参与。
+图像识别只是猜测80%或者99%是一个人脸，如果要主观100%确定是人脸则需要通过已有主观知识做分析抉择和证实。图像理解是一个“猜测与印证”的过程，一定是有强化学习、大脑抉择系统参与。
 
 ##程序实现
 
