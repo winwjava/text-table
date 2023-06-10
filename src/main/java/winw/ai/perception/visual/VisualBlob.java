@@ -390,6 +390,13 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		return color;
 	}
 
+	public static boolean hsbSimilar(int rgb, int color) {// TODO 应该改为HSV
+		// 色调（H），饱和度（S），亮度（V）
+		float[] hsb = Color.RGBtoHSB((rgb & 0xff0000) >> 16, (rgb & 0xff00) >> 8, rgb & 0xff, null);
+		float[] hsb2 = Color.RGBtoHSB((color & 0xff0000) >> 16, (color & 0xff00) >> 8, color & 0xff, null);
+		return true;
+	}
+
 	public static boolean rgbSimilar(int rgb, int color) {
 		int r = (rgb & 0xff0000) >> 16;
 		int g = (rgb & 0xff00) >> 8;
