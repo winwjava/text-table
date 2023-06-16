@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.util.opencv;
 
 public class VisualShapeColorDemo {
 

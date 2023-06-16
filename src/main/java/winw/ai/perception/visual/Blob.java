@@ -8,7 +8,7 @@ package winw.ai.perception.visual;
  * @author winw
  *
  */
-public class VisualBlobColor {// 根据左边的点和上边的点合并
+public class Blob {// 根据左边的点和上边的点合并
 	private int x0;
 	private int y0;
 
@@ -20,10 +20,10 @@ public class VisualBlobColor {// 根据左边的点和上边的点合并
 
 	// 相邻的 Blob
 
-	public VisualBlobColor() {
+	public Blob() {
 	}
 
-	public VisualBlobColor(int x0, int y0, int[][] blob, int color) {
+	public Blob(int x0, int y0, int[][] blob, int color) {
 		super();
 		this.x0 = x0;
 		this.y0 = y0;
@@ -31,7 +31,7 @@ public class VisualBlobColor {// 根据左边的点和上边的点合并
 		this.color = color;
 	}
 
-	public VisualBlobColor(int x0, int y0, int xOffset, int yOffset, int color) {
+	public Blob(int x0, int y0, int xOffset, int yOffset, int color) {
 		super();
 		this.x0 = x0;
 		this.y0 = y0;

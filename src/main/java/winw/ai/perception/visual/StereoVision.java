@@ -144,7 +144,7 @@ package winw.ai.perception.visual;
  * @author winw
  *
  */
-public class VisualStereo {
+public class StereoVision {
 	// 人眼是通过眼部肌肉调焦，计算深度信息？
 
 	// 相机标定：获得相机的焦距、光心坐标、镜头的畸变系数、内参数矩阵、外参数矩阵

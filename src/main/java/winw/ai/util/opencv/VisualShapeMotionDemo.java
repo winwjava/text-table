@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.util.opencv;
 
 /**
  * 通过运动物体，获取形状。

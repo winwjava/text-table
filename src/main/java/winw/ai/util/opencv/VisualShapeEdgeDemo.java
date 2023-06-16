@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.util.opencv;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,8 @@ import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+
+import winw.ai.perception.visual.VisualFeature;
 
 /**
  * 视觉形状，通过边缘实现。

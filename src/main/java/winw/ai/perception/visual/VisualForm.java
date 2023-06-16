@@ -1,11 +1,11 @@
 package winw.ai.perception.visual;
 
 /**
- * 运动，包括方向、速度。
+ * 形状
  * 
  * @author winw
  *
  */
-public class Motion {
+public class VisualForm {// Form/Shape
 
 }

@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.util.opencv;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -15,6 +15,8 @@ import javax.swing.JScrollPane;
 
 import org.opencv.core.Core;
 import org.opencv.core.Point;
+
+import winw.ai.perception.visual.VisualFeature;
 
 public class VisualShapePanel extends JPanel {
 	private static final long serialVersionUID = 1L;

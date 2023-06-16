@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.util.opencv;
 
 /**
  * 视觉形状感知。

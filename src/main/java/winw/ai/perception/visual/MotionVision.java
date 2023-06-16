@@ -1,11 +1,11 @@
 package winw.ai.perception.visual;
 
 /**
- * 表面，表面亮度。
+ * 运动视觉，包括方向、速度。
  * 
  * @author winw
  *
  */
-public class VisualSurface {
+public class MotionVision {
 
 }

@@ -1,4 +1,4 @@
-package winw.ai.perception.visual;
+package winw.ai.perception.visual.recognition;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

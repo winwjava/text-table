@@ -15,6 +15,8 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 
 /**
+ * 颜色块，从表面亮度分块（经过马赫带亮度处理），然后标记颜色。
+ * 
  * V1区的色觉细胞集群形成一种"斑块"结构并位于眼优势柱中心，主要位于第2、3层(也有位于第5、6层)，这种斑块结构形成了V1区标志性的纹状表征。
  * <p>
  * V1区的初级视觉信号还需要传到其他脑区进行进一步的联合处理后形成其他与视觉相关的复杂感觉，这些脑区被称为视觉联合区(V2~V5，其中V5又称为MT区即中颞区)。V2区与V1区是这些视觉联合区中唯一能在形态学意义上区分的，V2区表面为大细胞深层为粗斜有髓纤维形成标志性的条纹，V1区的标志则是色觉细胞形成的斑块。V1区4Cβ层的信号传至第2、3层后，斑块区的信号外送至V2区的细条纹区，斑块间区的信号外送至V2区的浅条纹区，V1区4B和4Cα层大细胞的信号则传至V2区的粗条纹区。细条纹区与色觉相关，浅条纹区与形状的感知(形觉)有关，粗条纹区与运动视觉和立体视觉有关。从V2区发出的信号再分别传送至其他脑区进行更多更复杂的处理，其中细条纹区和浅条纹区与V4区有联结，粗条纹区与V5区有联结。这些视觉联合皮层出现损伤都会导致人所感知到的视觉的功能缺失，如V4区损伤可能导致色觉全部丧失，而V5区的损伤则对应着选择性的、特定方向上运动觉和深度知觉的受损或缺失。
@@ -67,7 +69,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	 * @param image
 	 * @return
 	 */
-	public static BufferedImage brightnessReceptiveField(BufferedImage image) {
+	public static BufferedImage colorReceptiveField(BufferedImage image) {
 
 		BufferedImage blurImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_BGR);
 		for (int i = image.getMinX(); i < image.getWidth(); i++) {
@@ -87,7 +89,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		int[][] finished = new int[image.getWidth()][image.getHeight()];
 
 		// 斑块数据，值是VisualBlobColor，则表示这个点周围组成了斑块
-		VisualBlobColor[][] blobs = new VisualBlobColor[image.getWidth()][image.getHeight()];
+		Blob[][] blobs = new Blob[image.getWidth()][image.getHeight()];
 
 //		LinkedHashMap<int[][], Integer> blobMap = new LinkedHashMap<int[][], Integer>();
 		for (int i = image.getMinX() + radius + 1; i < image.getWidth() - radius - 1; i++) {
@@ -103,26 +105,26 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		// TODO 把颜色感受野合并为斑块区：相似颜色，并且相邻区域则合并成更大的区域。
 
 		int degree = 3;// 把视野分为20*20份，每一个空间频率里去分辨合并颜色；
-		List<Set<VisualBlobColor>> blobList = new ArrayList<Set<VisualBlobColor>>();
+		List<Set<Blob>> blobList = new ArrayList<Set<Blob>>();
 
 		// 8, point: 171,91
 
-		Set<VisualBlobColor> repeatSet = new HashSet<VisualBlobColor>();
+		Set<Blob> repeatSet = new HashSet<Blob>();
 		for (int m = 0; m < blobs.length; m += degree) {
 			for (int n = 0; n < blobs[0].length; n += degree) {
-				VisualBlobColor blob = blobs[m][n];
+				Blob blob = blobs[m][n];
 
 				if (blob == null) {
 					continue;
 				}
 
-				Set<VisualBlobColor> blobSet = new HashSet<VisualBlobColor>();
-				List<VisualBlobColor> waitSet = new ArrayList<VisualBlobColor>();
+				Set<Blob> blobSet = new HashSet<Blob>();
+				List<Blob> waitSet = new ArrayList<Blob>();
 				blobList.add(blobSet);
 				waitSet.add(blob);
 
 				while (waitSet.size() > 0) {
-					VisualBlobColor temp = waitSet.remove(0);
+					Blob temp = waitSet.remove(0);
 					if (temp != null && !repeatSet.contains(temp)) {
 						blobSet.add(temp);
 						repeatSet.add(temp);
@@ -145,7 +147,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 
 		for (int j = 0; j < blobs.length; j++) {
 			for (int k = 0; k < blobs[j].length; k++) {
-				VisualBlobColor colorBlob = blobs[j][k];
+				Blob colorBlob = blobs[j][k];
 				if (colorBlob != null) {// 找到一个中心点
 					int[][] blobArray = colorBlob.getBlob();
 					Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
@@ -161,10 +163,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 			}
 		}
 
-		for (Set<VisualBlobColor> blobSet : blobList) {
+		for (Set<Blob> blobSet : blobList) {
 //			Color randomColor = new Color(0,255, 255);
 			Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
-			for (VisualBlobColor colorBlob : blobSet) {
+			for (Blob colorBlob : blobSet) {
 				int[][] blobArray = colorBlob.getBlob();
 				for (int m = 0; m < blobArray.length; m++) {
 					for (int n = 0; n < blobArray[m].length; n++) {
@@ -181,13 +183,13 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		return resultImage;
 	}
 
-	private static void searchNeighborBlob(VisualBlobColor[][] blobs, Set<VisualBlobColor> repeatSet,
-			Set<VisualBlobColor> blobSet, List<VisualBlobColor> waitSet, VisualBlobColor colorBlob) {
+	private static void searchNeighborBlob(Blob[][] blobs, Set<Blob> repeatSet,
+			Set<Blob> blobSet, List<Blob> waitSet, Blob colorBlob) {
 
 		int[][] blob = colorBlob.getBlob();
 		for (int x = 0; x < blob.length; x++) {
 			for (int y = 0; y < blob[0].length; y++) {
-				VisualBlobColor neighbor = null;
+				Blob neighbor = null;
 				if (x == radius && y == radius) {
 				} else if (x == 0 && blob[x][y] == 1 && colorBlob.getX0() - radius + x - 1 >= 0) {// 左边界
 					neighbor = blobs[colorBlob.getX0() - radius + x - 1][colorBlob.getY0() - radius + y];
@@ -222,7 +224,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	}
 
 	public static void brightnessReceptiveField(BufferedImage resultImage, BufferedImage blurImage,
-			VisualBlobColor[][] blobs, int x0, int y0, int radius, int[][] finished) {// 视网膜上的视锥细胞只是采集了颜色。
+			Blob[][] blobs, int x0, int y0, int radius, int[][] finished) {// 视网膜上的视锥细胞只是采集了颜色。
 
 		// 斑块（Blobs）由若干个不等长的长条组合而成。
 		// 类似卷积的方式。
@@ -235,7 +237,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		int g = (rgb & 0xff00) >> 8;
 		int b = (rgb & 0xff);
 		int[][] blob = new int[radius + radius][radius + radius];// 中心点是（radius，radius）
-		VisualBlobColor blobColor = new VisualBlobColor(x0, y0, radius, radius, blurImage.getRGB(x0, y0));
+		Blob blobColor = new Blob(x0, y0, radius, radius, blurImage.getRGB(x0, y0));
 		blobColor.setBlob(blob);
 
 		// 向4个象限扩大。
@@ -420,12 +422,13 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	public static int radius = 10;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static void main(String[] args) throws IOException {
-		BufferedImage result = brightnessReceptiveField(ImageIO.read(new File("E:\\201502201529.jpg")));
-		FileOutputStream output = new FileOutputStream(new File("E:\\201502201529-blob.jpg"));
+		BufferedImage result = colorReceptiveField(ImageIO.read(new File("E:/IMG/201502201529.jpg")));
+		FileOutputStream output = new FileOutputStream(new File("E:/IMG/201502201529-blob.jpg"));
 		ImageIO.write(result, "jpg", output);
 		output.flush();
 		output.close();
 
+		// TODO 从表面亮度分块（经过马赫带亮度处理），然后标记颜色。
 		// TODO 如果两个blob之间差异不大，但存在边缘，则强化这个边缘两侧blob的对比度。
 	}
 

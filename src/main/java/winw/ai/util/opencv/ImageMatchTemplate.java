@@ -15,7 +15,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import winw.ai.perception.visual.VisualFeature;
-import winw.ai.perception.visual.VisualShapePanel;
 
 public class ImageMatchTemplate {
 
