@@ -62,7 +62,7 @@ public class CannyDetectorDemo {
 	}
 
 	public CannyDetectorDemo(String[] args) {
-		String imagePath = args.length > 0 ? args[0] : "e:\\ww.png";
+		String imagePath = args.length > 0 ? args[0] : "e:/IMG/0612.jpg";
 		src = Imgcodecs.imread(imagePath);
 		if (src.empty()) {
 			System.out.println("Empty image: " + imagePath);
@@ -135,14 +135,14 @@ public class CannyDetectorDemo {
 
 		System.out.println("contours size: " + contours.size());
 
-		for (int i = 0, len = contours.size(); i < len; i++) {// 5 绘制轮廓
-			if (!updated) {
-				VisualShapePanel.show("MatOfPoint", new VisualFeature(contours.get(i).toList()));
-			}
-//	        Imgproc.drawContours(src, contours, i, new Scalar(0, 255, 0), 1, Imgproc.LINE_AA);
-		}
+//		for (int i = 0, len = contours.size(); i < len; i++) {// 5 绘制轮廓
+//			if (!updated) {
+//				VisualShapePanel.show("MatOfPoint", new VisualFeature(contours.get(i).toList()));
+//			}
+////	        Imgproc.drawContours(src, contours, i, new Scalar(0, 255, 0), 1, Imgproc.LINE_AA);
+//		}
 		updated = true;
-//	    HighGui.imshow("111", src);
+	    HighGui.imshow("111", detectedEdges);
 //	    HighGui.waitKey(0);
 
 		Image img = HighGui.toBufferedImage(dst);

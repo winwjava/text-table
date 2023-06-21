@@ -61,14 +61,13 @@ public class VisualFeature extends Graph {// 需要支持三维形状
 		this.edgeList.add(edge);
 
 		// 转换为矩阵
-		matrix.zero(); // 将矩阵元素都设置为0
-		for (List<Point> line : edgeList) {
-			for (Point p : line) {
-				matrix.set((int) p.x, (int) p.y, 1);
-//				System.out.println(matrix.get((int) p.x, (int) p.y));
-			}
-		}
-		System.out.println(matrix.get(100, 100));
+//		matrix.zero(); // 将矩阵元素都设置为0
+//		for (List<Point> line : edgeList) {
+//			for (Point p : line) {
+//				matrix.set((int) p.x, (int) p.y, 1);
+//			}
+//		}
+//		System.out.println(matrix.get(100, 100));
 //		System.out.println(matrix);
 	}
 

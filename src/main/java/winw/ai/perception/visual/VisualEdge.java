@@ -8,7 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 
 import javax.imageio.ImageIO;
 
@@ -63,11 +67,17 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	/**
 	 * 亮度0~255，亮度差异大于10，则认为是边缘。RGB经过灰度处理后R=G=B，只取其中一个值比较即可
 	 */
-	public static int RANGE = 10;// 像素梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
+	public static int RANGE = 6;// 明暗梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
 
-	public static int radius = 8;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
+	public static int radius = 10;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static BufferedImage edge(BufferedImage image) {
+//		BufferedImage scaledImage = new BufferedImage(image.getWidth() / 2, image.getHeight() / 2, image.getType());
+//		Graphics2D graphics = scaledImage.createGraphics();
+//		graphics.drawImage(
+//				image.getScaledInstance(image.getWidth() / 2, image.getHeight() / 2, BufferedImage.SCALE_FAST), 0, 0,
+//				null);
+//		graphics.dispose();
 		int[][] grayImage = brightnessReceptiveField(image);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
 		edgeReceptiveField(image, grayImage);// 在V1或V2，线条感受野，当两个有交集时，可以合并。
 		return image;
@@ -187,26 +197,271 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //		BufferedImage resultImage = image.getSubimage(0, 0, image.getWidth(), image.getHeight());
 		int[][] resultImage = Arrays.stream(grayImage).map(a -> Arrays.copyOf(a, a.length)).toArray(int[][]::new);
 
-		int[][] finished = new int[grayImage.length][grayImage[0].length];
+		int[][] detected = new int[grayImage.length][grayImage[0].length];
 
 		// 外侧膝状体LGN是二维数据。到了视皮层功能柱，会用List存储。
 //		int[][] edges = new int[grayImage.length][grayImage[0].length];
 
-		// 外侧膝状体是二维数据，视觉皮层功能柱是一个List，相同方向相近位置的放在一起；方便合并运算；
-		List<Line> lineColumn = new ArrayList<Line>();// 方向、线条功能柱，相同方向相近位置的放在一起；
+		// TODO 外侧膝状体是二维数据，视觉皮层功能柱是一个List，相同方向相近位置的放在一起；方便合并运算；
+//		List<Line> lineColumn = new ArrayList<Line>();// 方向、线条功能柱，相同方向相近位置的放在一起；
 
 		for (int i = 0 + radius + 1; i < grayImage.length - radius - 1; i++) {
 			for (int j = 0 + radius + 1; j < grayImage[0].length - radius - 1; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 
-				if (finished[i][j] <= 0) {
-					simpleCellReceptiveField(image, grayImage, i, j, radius, finished);
+				if (count >= 30) {
+					return resultImage;
 				}
+
+				if (detected[i][j] <= 0) {
+					boolean edge = simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 1);
+//					if (edge == false) {// 1个像素宽度没找到，再用两个像素试一下。
+//						edge = simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 2);
+//					}
+				}
+
 			}
 		}
 
 		return resultImage;
 	}
+
+	static int count = 0;
+
+	/**
+	 * 取两点之间直线上每个点的亮度
+	 */
+	public static List<Integer> getBrightness(int[][] image, int x1, int y1, int x2, int y2) {
+//		List<Point> list = new ArrayList<Point>();
+		List<Integer> list = new ArrayList<Integer>();
+		if (x1 == x2) {// Tangent = NaN
+			int from = Math.min(y1, y2);
+			int to = Math.max(y1, y2);
+			for (int y = from; y <= to; y++) {
+				list.add(image[x1][y]);
+			}
+		} else {
+			double slope = ((double) (y2 - y1)) / ((double) (x2 - x1));
+			int step = (x2 > x1) ? 1 : -1;
+			for (int x = x1; x != x2; x += step) {
+				int y = (int) ((x - x1) * slope + y1);
+				list.add(image[x][y]);
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * 条形光斑，对线条或者边缘的感受器。
+	 * <p>
+	 * 条形光斑的两端是开放区域，对宽度有限缩。有利于拼出更长的线条。
+	 * <p>
+	 * 一旦条形光斑固定好一定高度，增长不会产生额外的刺激效果，相反，不管在条形光斑哪边的宽度增加都会降低视觉神经元的放电频率。
+	 * 因此这些视觉细胞的感受野可以被描绘成如图 3c所示。
+	 * 中心区域为开的区域，即刺激能够激活的区域。而关的周围区域则分布在两侧，即刺激难以激活的区域。在视觉皮层，
+	 * 对于这样感受野的细胞，我们称之为简单细胞。空间上这些简单细胞在视觉皮层中通常限缩到非常狭窄的区域，
+	 * 它们最好的刺激方式是条带光斑，并且它们对于光斑的朝向非常敏感，对于刺激有开和关的区域拮抗。当发散光覆盖整个开和关的区域时，
+	 * 不能够刺激这些细胞。简单细胞因此能被看成是视觉特定区域里面对线条或者边缘的感受器。
+	 * 
+	 * @return
+	 */
+	public static boolean simpleCellReceptiveField(BufferedImage image, int[][] blurImage, int x0, int y0, int radius,
+			int[][] detected, int width) {// orientationSelectivity
+		// 亮度分界
+		// 区域汇聚
+
+//		List<Line> lineColumn = new ArrayList<Line>();// 方向、线条功能柱，相同方向相近位置的放在一起；
+
+//		int width = 1;
+
+		int gray = blurImage[x0][y0];// 中心
+
+		int grayR = blurImage[x0 + width][y0];
+		int grayL = blurImage[x0 - width][y0];
+		int grayT = blurImage[x0][y0 + width];
+		int grayD = blurImage[x0][y0 - width];
+
+		// 如果中心点周围4个点没有亮度差异，则跳过，否则开始找边缘。
+		if (Math.abs(grayR - gray) < RANGE && Math.abs(gray - grayL) < RANGE && Math.abs(gray - grayT) < RANGE
+				&& Math.abs(gray - grayD) < RANGE) {
+			return false;
+		}
+		Graphics graphics = image.getGraphics();
+		graphics.setColor(Color.GREEN);
+		int x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6;
+//		List<Integer> centerPoint = new ArrayList<Integer>();
+//		List<Integer> rightPoint = new ArrayList<Integer>();
+//		List<Integer> leftPoint = new ArrayList<Integer>();
+
+		// 用外环线绕180度，看每个角度的直线。
+		// 方位选择性（orientation selectivity），也叫做“空间朝向”（orientation），指的是一条短线的倾斜角度（范围是0-180°）
+		// 绝大部分初级视觉皮层细胞，都有一个“最喜欢的方位”（preferred orientation，中文习惯翻译成“最优方位”）
+		// 类似的，还存在“运动方向选择性”、“空间频率/时间频率选择性”（很快会讲到）、“颜色选择性”等等。
+		
+		HashMap<Integer, Integer> orientationSelectivity = new HashMap<Integer, Integer>();
+		for (int i = 0; i < 180; i++) {
+//			centerPoint.clear();
+//			rightPoint.clear();
+//			leftPoint.clear();
+			// 外环两个点
+			x1 = (int) (x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
+			y1 = (int) (y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
+
+			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
+			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
+
+
+			// 求两侧线条的亮度。
+			// 通过
+
+			List<Integer> centerFieldBrightness = new ArrayList<Integer>();
+//			List<Integer> aroundFieldBrightness = new ArrayList<Integer>();
+//			List<Integer> leftFieldBrightness = new ArrayList<Integer>();
+//			List<Integer> rightFieldBrightness = new ArrayList<Integer>();
+
+			int centerDiff = 1;// 在线条上，中间与两侧拮抗；
+			int bothSidesDiff = 1;// 在边缘上，两侧拮抗；
+			int centerTotalDiff = 0;// 在线条上，中间与两侧拮抗；
+			int bothSidesTotalDiff = 0;// 在边缘上，两侧拮抗；
+//			List<Integer> bothSidesDiff = new ArrayList<Integer>();
+
+			// 应该是用一个感受野到整个图片上去移动匹配。
+			int step = Integer.valueOf(x2).compareTo(x1);
+			double slope = Integer.valueOf(x2).equals(x1) ? 0 : ((double) (y2 - y1)) / ((double) (x2 - x1));
+			if (step == 0) {// Y轴 Tangent = NaN
+				int from = Math.min(y1, y2);
+				int to = Math.max(y1, y2);
+				for (int y = from; y <= to; y++) {
+					centerFieldBrightness.add(blurImage[x1][y]);
+					detected[x1][y] = 1;
+//					leftFieldBrightness.add(blurImage[x1 - 1][y]);
+//					rightFieldBrightness.add(blurImage[x1 + 1][y]);
+
+					if (Math.abs(blurImage[x1 - width][y] - blurImage[x1 + width][y]) >= RANGE) {
+						bothSidesDiff++;
+						bothSidesTotalDiff+=Math.abs(blurImage[x1 - width][y] - blurImage[x1 + width][y]);
+					}
+					if (Math.abs(blurImage[x1 - width][y] - blurImage[x1][y]) >= RANGE
+							&& Math.abs(blurImage[x1 + width][y] - blurImage[x1][y]) >= RANGE) {
+						centerDiff++;
+						centerTotalDiff += Math.abs(blurImage[x1 - width][y] - blurImage[x1][y]) + Math.abs(blurImage[x1 + width][y] - blurImage[x1][y]);
+					}
+					// 要么两侧拮抗，要么中间与两侧拮抗。
+				}
+			} else {
+//				int step = (x2 > x1) ? 1 : -1;
+				for (int x = x1; x != x2; x += step) {// 斜率靠近1的时候只有两个点
+					// 当斜率等于0，平行与X轴
+					int y = (int) ((x - x1) * slope + y1);
+					centerFieldBrightness.add(blurImage[x][y]);
+					detected[x][y] = 1;
+//					leftFieldBrightness.add(blurImage[x - 1][y]);
+//					rightFieldBrightness.add(blurImage[x + 1][y]);
+//					int leftPoint = 0;
+//					int rightPoint = 0;
+
+					if (i < 30 || i >= 150) {// 靠近X轴
+						if (Math.abs(blurImage[x][y + width] - blurImage[x][y - width]) >= RANGE) {
+							bothSidesDiff++;
+							bothSidesTotalDiff+=Math.abs(blurImage[x][y + width] - blurImage[x][y - width]);
+						}
+						if (Math.abs(blurImage[x][y + width] - blurImage[x][y]) >= RANGE
+								&& Math.abs(blurImage[x][y - width] - blurImage[x][y]) >= RANGE) {
+							centerDiff++;
+							centerTotalDiff += Math.abs(blurImage[x][y + width] - blurImage[x][y]) +Math.abs(blurImage[x][y - width] - blurImage[x][y]);
+						}
+					} else if (i >= 60 && i < 120) {// 靠近Y轴
+						if (Math.abs(blurImage[x + width][y] - blurImage[x - width][y]) >= RANGE) {
+							bothSidesDiff++;
+							bothSidesTotalDiff+=Math.abs(blurImage[x + width][y] - blurImage[x - width][y]) ;
+						}
+						if (Math.abs(blurImage[x + width][y] - blurImage[x][y]) >= RANGE
+								&& Math.abs(blurImage[x - width][y] - blurImage[x][y]) >= RANGE) {
+							centerDiff++;
+							centerTotalDiff +=Math.abs(blurImage[x + width][y] - blurImage[x][y]) + Math.abs(blurImage[x - width][y] - blurImage[x][y]);
+						}
+					} else if (i >= 30 && i < 60) {// 靠近45度斜线，10到11点钟方向
+						if (Math.abs(blurImage[x + width][y - width] - blurImage[x - width][y + width]) >= RANGE) {
+							bothSidesDiff++;
+							bothSidesTotalDiff+=Math.abs(blurImage[x + width][y - width] - blurImage[x - width][y + width]);
+						}
+						if (Math.abs(blurImage[x + width][y - width] - blurImage[x][y]) >= RANGE
+								&& Math.abs(blurImage[x - width][y + width] - blurImage[x][y]) >= RANGE) {
+							centerDiff++;
+							centerTotalDiff +=Math.abs(blurImage[x + width][y - width] - blurImage[x][y]) + Math.abs(blurImage[x - width][y + width] - blurImage[x][y]);
+						}
+					} else if (i >= 120 && i < 150) {// 靠近135度斜线，1-2点钟方向
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x - width][y - width]) >= RANGE) {
+							bothSidesDiff++;
+							bothSidesTotalDiff+=Math.abs(blurImage[x + width][y + width] - blurImage[x - width][y - width]);
+						}
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) >= RANGE
+								&& Math.abs(blurImage[x - width][y - width] - blurImage[x][y]) >= RANGE) {
+							centerDiff++;
+							centerTotalDiff +=Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) + Math.abs(blurImage[x - width][y - width] - blurImage[x][y]) ;
+						}
+					}
+
+				}
+			}
+			// TODO 全部 > RANGE
+			if(centerFieldBrightness.size() > 10) {
+				orientationSelectivity.put(i, Math.max(centerTotalDiff / centerDiff / 2, bothSidesTotalDiff / bothSidesDiff));
+			}
+			// TODO 需要前馈机制，在复杂细胞合并线条时，重新计算简单细胞。
+			// 需要拮抗，还需要明亮的一致，暗淡的一致。
+
+			// TODO 假设边缘或线条用了两个像素？
+
+			// 中间点存在差异，并且平均差异和中间点差异类似？
+
+			// 拮抗式，怎么实现？
+			// 每一个点对称的点拮抗。或者两侧的点对比中间的点拮抗
+
+			// TODO 最佳角度，明暗对比度的和最大。
+			// TODO 有些角度，取样的点太少了，怎么办？
+			
+			if (centerFieldBrightness.size() > 10
+					&& Double.valueOf(bothSidesDiff) / centerFieldBrightness.size() > 0.98F) {
+//				System.out.println("bothSidesDiff: " + bothSidesDiff + " / " + leftFieldBrightness.size() +", ("+x1 +", "+y1+"),("+x2+","+y2+")");
+				count++;
+				graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
+				graphics.drawLine(x1, y1, x2, y2);
+				Integer key = orientationSelectivity.entrySet().stream()
+						  .max(Map.Entry.comparingByValue()).get().getKey();
+				System.out.println("bothSidesDiff: "+key +", "+ orientationSelectivity.get(key));
+				return true;// TODO 调整到最佳角度
+			}
+			if (centerFieldBrightness.size() > 10 && Double.valueOf(centerDiff) / centerFieldBrightness.size() > 0.98F) {
+//				System.out.println("centerDiff: " + centerDiff + " / " + centerFieldBrightness.size());
+				count++;
+				graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
+				graphics.drawLine(x1, y1, x2, y2);
+				Integer key = orientationSelectivity.entrySet().stream()
+						  .max(Map.Entry.comparingByValue()).get().getKey();
+				System.out.println("centerDiff: "+key +", "+ orientationSelectivity.get(key));
+				return true;// TODO 调整到最佳角度
+			}
+
+//			if (Math.abs(centerFieldAvgBrightness - aroundFieldAvgBrightness) > RANGE) {// TODO 应该取最大值？
+//				count++;
+//				graphics.drawLine(x1, y1, x2, y2);
+//				return ;
+//			}
+		}
+		
+//		orientationSelectivity
+		Integer key = orientationSelectivity.entrySet().stream()
+				  .max(Map.Entry.comparingByValue()).get().getKey();
+		System.out.println(key +", "+ orientationSelectivity.get(key));
+		
+		// TODO 需要先做高斯滤波平滑噪声
+		// https://zhuanlan.zhihu.com/p/143426695
+		// TODO 用Canny边缘检测，先计算每个像素点两个方向的梯度，然后计算幅值
+		return false;
+	}
+
+	static Random RANDOM = new Random();
 
 	/**
 	 * 简单细胞，开放的条形光斑。
@@ -265,232 +520,6 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 */
 	public static void hypercomplexCellReceptiveField() {// 分为低阶超复杂细胞和高阶超复杂细胞。类似简单细胞和复杂细胞的关系。
 
-	}
-
-	/**
-	 * 条形光斑，对线条或者边缘的感受器。
-	 * <p>
-	 * 条形光斑的两端是开放区域，对宽度有限缩。有利于拼出更长的线条。
-	 * <p>
-	 * 一旦条形光斑固定好一定高度，增长不会产生额外的刺激效果，相反，不管在条形光斑哪边的宽度增加都会降低视觉神经元的放电频率。
-	 * 因此这些视觉细胞的感受野可以被描绘成如图 3c所示。
-	 * 中心区域为开的区域，即刺激能够激活的区域。而关的周围区域则分布在两侧，即刺激难以激活的区域。在视觉皮层，
-	 * 对于这样感受野的细胞，我们称之为简单细胞。空间上这些简单细胞在视觉皮层中通常限缩到非常狭窄的区域，
-	 * 它们最好的刺激方式是条带光斑，并且它们对于光斑的朝向非常敏感，对于刺激有开和关的区域拮抗。当发散光覆盖整个开和关的区域时，
-	 * 不能够刺激这些细胞。简单细胞因此能被看成是视觉特定区域里面对线条或者边缘的感受器。
-	 */
-	public static void simpleCellReceptiveField(BufferedImage image, int[][] blurImage, int x0, int y0, int radius,
-			int[][] finished) {// orientationSelectivity
-		// 亮度分界
-		// 区域汇聚
-
-		int gray = blurImage[x0][y0];// 中心
-
-		int grayR = blurImage[x0 + 1][y0];
-		int grayL = blurImage[x0 - 1][y0];
-		int grayT = blurImage[x0][y0 + 1];
-		int grayD = blurImage[x0][y0 - 1];
-
-		// 如果中心点周围4个点存在亮度差异，则开始找边缘。
-		if (Math.abs(grayR - gray) < RANGE && Math.abs(gray - grayL) < RANGE && Math.abs(gray - grayT) < RANGE
-				&& Math.abs(gray - grayD) < RANGE) {
-			return;
-		}
-		Graphics graphics = image.getGraphics();
-		graphics.setColor(Color.GREEN);
-		int x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6;
-		List<Integer> centerPoint = new ArrayList<Integer>();
-		List<Integer> rightPoint = new ArrayList<Integer>();
-//		List<Integer> leftPoint = new ArrayList<Integer>();
-
-		// 用外环线绕180度，看每个角度的直线。
-		// 方位选择性（orientation selectivity），也叫做“空间朝向”（orientation），指的是一条短线的倾斜角度（范围是0-180°）
-		// 绝大部分初级视觉皮层细胞，都有一个“最喜欢的方位”（preferred orientation，中文习惯翻译成“最优方位”）
-		// 类似的，还存在“运动方向选择性”、“空间频率/时间频率选择性”（很快会讲到）、“颜色选择性”等等。
-		for (int i = 0; i < 180; i++) {
-			centerPoint.clear();
-			rightPoint.clear();
-//			leftPoint.clear();
-			// 外环两个点
-			x1 = (int) (x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
-			y1 = (int) (y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
-
-			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
-			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
-
-			// 内环两个点
-			x3 = (x0 + x1) / 2;
-			y3 = (y0 + y1) / 2;
-			x4 = (x0 + x2) / 2;
-			y4 = (y0 + y2) / 2;
-
-			// x1 x5 x3 x0 x4 x6 x2
-			x5 = (x1 + x3) / 2;
-			y5 = (y1 + y3) / 2;
-			x6 = (x2 + x4) / 2;
-			y6 = (y2 + y4) / 2;
-
-//			leftPoint.add(blurImage.getRGB(x0, y0));
-			centerPoint.add(blurImage[x1][y1]);
-			centerPoint.add(blurImage[x2][y2]);
-			centerPoint.add(blurImage[x3][y3]);
-			centerPoint.add(blurImage[x4][y4]);
-			centerPoint.add(blurImage[x5][y5]);
-			centerPoint.add(blurImage[x6][y6]);
-
-			// 用外环上的两个点，和内环上的两个点判断是否是边缘。
-			// TODO 考虑再增加一些点，增大准确度
-			// 分为6个区域
-			if (i < 30 || i >= 150) {// 靠近X轴
-//				rightPoint.add(blurImage.getRGB(x0, y0 + 1));
-				rightPoint.add(blurImage[x1][y1 + 2]);
-				rightPoint.add(blurImage[x2][y2 + 2]);
-				rightPoint.add(blurImage[x3][y3 + 2]);
-				rightPoint.add(blurImage[x4][y4 + 2]);
-				rightPoint.add(blurImage[x5][y5 + 2]);
-				rightPoint.add(blurImage[x6][y6 + 2]);
-
-				if (isLeftEdge(centerPoint, rightPoint) || isRightEdge(centerPoint, rightPoint)) {
-//					if(y0 == 118) {
-//					}else {
-//					}
-//					System.out.println(x0 +","+ y0);
-					graphics.drawLine(x1, y1, x2, y2);
-//					graphics.drawOval(x0 - radius, y0 - radius, radius * 2, radius * 2);
-					for (int m = Math.min(x3, x4); m < Math.max(x3, x4); m++) {// 跳过这个区域的点
-						for (int n = y0 - 2; n < y0 + 2; n++) {
-							finished[m][n] = 1;
-//							edgeImage.setRGB(m, n, Color.RED.getRGB());
-						}
-					}
-					return;
-				}
-
-			} else if (i >= 60 && i < 120) {// 靠近Y轴
-//				rightPoint.add(blurImage.getRGB(x0+ 1, y0 ));
-				rightPoint.add(blurImage[x1 + 2][y1]);
-				rightPoint.add(blurImage[x2 + 2][y2]);
-				rightPoint.add(blurImage[x3 + 2][y3]);
-				rightPoint.add(blurImage[x4 + 2][y4]);
-				rightPoint.add(blurImage[x5 + 2][y5]);
-				rightPoint.add(blurImage[x6 + 2][y6]);
-
-				if (isLeftEdge(centerPoint, rightPoint) || isRightEdge(centerPoint, rightPoint)) {
-					graphics.drawLine(x1, y1, x2, y2);
-//					graphics.drawOval(x0 - radius, y0 - radius, radius * 2, radius * 2);
-					for (int m = x0 - 2; m < x0 + 2; m++) {// 跳过这个区域的点
-						for (int n = Math.min(y3, y4); n < Math.max(y3, y4); n++) {
-							finished[m][n] = 1;
-//							edgeImage.setRGB(m, n, Color.RED.getRGB());
-						}
-					}
-					return;
-				}
-			} else if (i >= 30 && i < 60) {// 靠近45度斜线，10到11点钟方向
-				rightPoint.add(blurImage[x1 + 2][y1 - 2]);
-				rightPoint.add(blurImage[x2 + 2][y2 - 2]);
-				rightPoint.add(blurImage[x3 + 2][y3 - 2]);
-				rightPoint.add(blurImage[x4 + 2][y4 - 2]);
-				rightPoint.add(blurImage[x5 + 2][y5 - 2]);
-				rightPoint.add(blurImage[x6 + 2][y6 - 2]);
-
-				if (isLeftEdge(centerPoint, rightPoint) || isRightEdge(centerPoint, rightPoint)) {
-					graphics.drawLine(x1, y1, x2, y2);
-//					graphics.drawOval(x0 - radius, y0 - radius, radius * 2, radius * 2);
-
-					for (int m = Math.min(x3, x4); m < Math.max(x3, x4); m++) {// 跳过这个区域的点
-						for (int n = Math.min(y3, y4); n < Math.max(y3, y4); n++) {
-							finished[m][n] = 1;
-//							edgeImage.setRGB(m, n, Color.RED.getRGB());
-						}
-					}
-					return;
-				}
-			} else if (i >= 120 && i < 150) {// 靠近45度斜线，1-2点钟方向
-				rightPoint.add(blurImage[x1 + 2][y1 + 2]);
-				rightPoint.add(blurImage[x2 + 2][y2 + 2]);
-				rightPoint.add(blurImage[x3 + 2][y3 + 2]);
-				rightPoint.add(blurImage[x4 + 2][y4 + 2]);
-				rightPoint.add(blurImage[x5 + 2][y5 + 2]);
-				rightPoint.add(blurImage[x6 + 2][y6 + 2]);
-
-				if (isLeftEdge(centerPoint, rightPoint) || isRightEdge(centerPoint, rightPoint)) {
-					graphics.drawLine(x1, y1, x2, y2);
-//					graphics.drawOval(x0 - radius, y0 - radius, radius * 2, radius * 2);
-//					System.out.println("斜线角度："+i);
-
-					for (int m = Math.min(x3, x4); m < Math.max(x3, x4); m++) {// 跳过这个区域的点
-						for (int n = Math.min(y3, y4); n < Math.max(y3, y4); n++) {
-							finished[m][n] = 1;
-//							edgeImage.setRGB(m, n, Color.RED.getRGB());
-						}
-					}
-					return;
-				}
-			}
-		}
-
-		// 中心环绕型，可以检测出亮点。或亮环
-
-		// 检测线条。
-
-		// 中心环，外环
-
-		// 斜线，用椭圆形，像哈密瓜一样。
-
-		// 点、环
-
-		// 中心区域的大小？外围环的大小？大小自适应？
-
-		// 分为中心区域，和环绕区域。
-		// 中心区域中有边界穿过
-		// 灰度处理，或二值化
-//		int brightness = brightness(rgb);
-		// 中心圆亮，环绕区域暗
-		// 通过卷积，更高效？
-		// 只考虑一半亮，一半暗
-
-		// TODO 弧线、夹角、多线相交
-
-		// 穿过中心点，另外
-
-		// TODO 夹角，找出两根线。在线的尽头找夹角？
-
-		// TODO 感受野面积、形状、颜色
-	}
-
-	/**
-	 * leftPoint 亮 rightPoint 暗
-	 * 
-	 * @param centerPoint
-	 * @param rightPoint
-	 * @return
-	 */
-	private static boolean isLeftEdge(List<Integer> centerPoint, List<Integer> rightPoint) {// , List<Integer> leftPoint
-		for (int k = 0; k < centerPoint.size(); k++) {
-			if (centerPoint.get(k) - rightPoint.get(k) < RANGE) {// || leftPoint.get(k) - rightPoint.get(k) < RANGE
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * 
-	 * leftPoint 暗 rightPoint 亮
-	 * 
-	 * @param centerPoint
-	 * @param rightPoint
-	 * @return
-	 */
-	private static boolean isRightEdge(List<Integer> centerPoint, List<Integer> rightPoint) {// , List<Integer>
-																								// leftPoint
-		for (int k = 0; k < centerPoint.size(); k++) {
-			if (rightPoint.get(k) - centerPoint.get(k) < RANGE) {// || rightPoint.get(k) - leftPoint.get(k) < RANGE
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public static int gray(Color color) {// 灰度处理：将亮度值（0~255）分别设置到R、G、B里面
@@ -590,8 +619,8 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 
 	public static void main(String[] args) throws IOException {
 		BufferedImage result = edge(ImageIO.read(new File("E:/IMG/0612.jpg")));
-
 		FileOutputStream output = new FileOutputStream(new File("E:/IMG/0612-edge.jpg"));
+
 		ImageIO.write(result, "jpg", output);
 		output.flush();
 		output.close();
@@ -602,4 +631,5 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		// 非经典感受野的意义？
 
 	}
+
 }
