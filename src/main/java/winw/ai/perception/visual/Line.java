@@ -8,10 +8,29 @@ package winw.ai.perception.visual;
  */
 public class Line {
 
+	int orientation;// 方向
+	
 	int x1;
 	int y1;
 	int x2;
 	int y2;
+
+	public Line(int orientation, int x1, int y1, int x2, int y2) {
+		super();
+		this.orientation = orientation;
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	}
+
+	public int getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(int orientation) {
+		this.orientation = orientation;
+	}
 
 	public int getX1() {
 		return x1;
