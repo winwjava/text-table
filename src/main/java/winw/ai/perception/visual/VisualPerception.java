@@ -10,14 +10,14 @@ import winw.ai.model.Model;
 /**
  * 视觉感知。
  * 
- * <p>
+ * <Point>
  * 获得注意力关注，
- * <p>
+ * <Point>
  * visuospatial sketchpad 视空间模版，模型匹配
- * <p>
+ * <Point>
  * episodic buffer 情景缓存
  * 
- * <p>
+ * <Point>
  * 模拟视网膜到V1，再经过V2、V3、V4
  * 
  * @author winw
@@ -30,14 +30,14 @@ public class VisualPerception {
 	/**
 	 * 视网膜，实际的功能会只局限于简单的像素采集，经过了光电转换，将光信号转换成电信号。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 光感受器将信息传递给十多个亚型的双极细胞，可以理解为十多条并行的通路，这十多条通路在对视觉信息进行平行传递时由水平细胞和无长突细胞进行加工处理，最终将视觉信息的不同要素（比如明暗变化，颜色，运动速度与方向等）抽提出来传递给不同亚型的神经节细胞。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 通过视网膜的中心环绕感受野，视网膜可以转换视觉场景的信号有：暗（OFF）、亮（ON）、边缘（EDGE）、红、绿、蓝、左移运动和右移运动（Right
 	 * motion）
 	 * 
-	 * <p>
+	 * <Point>
 	 * 人视网膜有视杆细胞约12000万个，对弱光刺激敏感；视锥细胞有650万～700万个，对强光和颜色敏感。二种细胞平行排列，视锥细胞主要集中在中央凹；视杆细胞由中央凹边缘向外周渐多。至锯齿缘附近，视细胞消失。
 	 * 
 	 * @see http://www.ion.ac.cn/kpwz/201907/t20190703_5332551.html
@@ -64,7 +64,7 @@ public class VisualPerception {
 	/**
 	 * 视皮层呈现柱状分布：方向柱、方位柱、眼优势柱、空间频率柱以及颜色柱
 	 * 
-	 * <p>
+	 * <Point>
 	 * 颜色、方向、朝向、复杂形状、深度。
 	 */
 	public void v1() {
@@ -74,13 +74,13 @@ public class VisualPerception {
 	/**
 	 * 根据边缘，得到形状。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 使用聚类？
 	 * 
-	 * <p>
+	 * <Point>
 	 * 将形状分类/聚类。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 梯度
 	 */
 	public void v1Shape() {
@@ -91,7 +91,7 @@ public class VisualPerception {
 	 * 
 	 * 转移注意力，由大脑基底核或额叶控制。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 周围可感知的信息很多，但大脑的计算资源是有限的，所以一般只关注当前的注意力聚焦的部分。
 	 * 
 	 */
@@ -106,7 +106,7 @@ public class VisualPerception {
 
 	/**
 	 * 瞬时记忆与活跃值。由海马体维持，如果短时间没有持续激活，则会减弱，甚至消失。
-	 * <p>
+	 * <Point>
 	 * 活跃值 介于0和1，数字越大越活跃。
 	 */
 	protected Map<Memory, Double> momentMemory = new HashMap<Memory, Double>();

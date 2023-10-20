@@ -14,7 +14,7 @@ import winw.ai.model.Model;
 /**
  * 主观行动。
  * 
- * <p>
+ * <Point>
  * 主观能动性。
  * 
  * @author winw
@@ -29,24 +29,24 @@ public class SubjectiveAgent extends Agent{
 	
 	/**
 	 * 瞬时记忆与活跃值。由海马体维持，如果短时间没有持续激活，则会减弱，甚至消失。
-	 * <p>
+	 * <Point>
 	 * 活跃值 介于0和1，数字越大越活跃。
 	 */
 	protected Map<Memory, Double> momentMemory = new HashMap<Memory, Double>();
 	/**
 	 * 注意力和工作记忆（纹状体和前额叶），专门处理当前的瞬时记忆。
-	 * <p>
+	 * <Point>
 	 * 主观反应系统。包含价值抉择。逻辑推演。动机。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 主观价值评估。
-	 * <p>
+	 * <Point>
 	 * 思考和决策。
-	 * <p>
-	 * <p>
+	 * <Point>
+	 * <Point>
 	 * 当处于危险、新奇场景，需要提高注意力，对感官输入更敏锐。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 注意力缺陷多动症(ADHD)，主要特征是不专注、过动和冲动。过去我们认为ADHD与脑部前额叶相关。然而，事实上，大部分受ADHD困扰的人是由于小脑没有适当地发挥功能。在过去的20年中的研究发现，小脑发育不良的人同时有ADHD的症状。藉由功能性扫描也发现ADHD患者的小脑活跃度很低。
 	 */
 	protected void attention() {// TODO 还有潜意识，潜意识可以不占用注意力资源。
@@ -93,12 +93,12 @@ public class SubjectiveAgent extends Agent{
 
 	/**
 	 * 潜意识，不需要注意力参与。所有养成的行动习惯。
-	 * <p>
+	 * <Point>
 	 * 又称内隐记忆。程序性记忆。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 程序性记忆要比自传式记忆简单的多，波士顿动力的人行机器人是一个很好的证明。
-	 * <p>
+	 * <Point>
 	 * 可以一边吃饭，一边看电视。但是不能一边听课一边玩游戏。
 	 */
 	protected void subconscious() {

@@ -3,9 +3,9 @@ package winw.ai.perception.visual;
 /**
  * 立体视觉，是视觉认知中识别物体的必要功能，高度真实的映射了真实世界。
  * 
- * <p>
+ * <Point>
  * 三维立体视觉感知，比二维平面多出的一维是深度（depth），即感知到的距离远近。
- * <p>
+ * <Point>
  * 单目线索，可以通过单目视野物体的关联信息形成深度感知。
  * <li>透视 Perspective：线性透视（Linear perspective）、曲线透视（Curvilinear
  * perspective，又称为鱼眼透视）、空气透视（Aerial perspective）
@@ -21,13 +21,13 @@ package winw.ai.perception.visual;
  * parallax：当头部运动时感知到的差异，不同距离的物体以不同的速度移动，较近的物体似乎比远处的物体移动得更快。运动视差属于单眼线索。在坐火车时这种感觉非常明显：眼前的物体瞬间飞逝，而远处的景物看起来似乎静止不动。
  * <li>调节
  * Accommodation：为了使感知的图像清晰地出现在视网膜上，眼睛的睫状肌根据物体的距离变化而随时调整晶状体的形状（屈光率），从而改变焦距以保持清晰的焦点，这个过程被称为调节。
- * <p>
+ * <Point>
  * 双目线索，通过双目近距离的视野成像差异计算深度信息。
  * <li>会聚
  * Convergence：会聚是人在观察物体时两眼之间的夹角，常常又称为辐辏。当视线聚焦在同一个物体上，两个眼球需要相对向内旋转一定角度，以便双目视线相交。
  * <li>视差 Disparity：当双眼注视同一个物体时，左右眼因位置不同会产生视角的差异，左右视网膜成像也会略有不同。
  * 
- * <p>
+ * <Point>
  * 
  * 深度线索汇总表 (Doerner 等, 2022)​
  * <table>
@@ -123,7 +123,7 @@ package winw.ai.perception.visual;
  * <td>相对</td>
  * </table>
  * 
- * <p>
+ * <Point>
  * 参考：
  * <li>Stefano. Stereo Vision:Algorithms and Applications
  * <li>https://cloud.tencent.com/developer/article/1966973
@@ -171,4 +171,5 @@ public class StereoVision {
 
 	// 由明暗边界 和 视差信息 在V4脑区整合形成立体形状信息。
 
+	// TODO 多元线性拟合；推测出三维平面或曲面；
 }

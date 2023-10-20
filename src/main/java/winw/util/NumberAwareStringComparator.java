@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 /**
  * Number aware string sorting with comparator.
- * <p>
+ * <Point>
  * Always compares non-digits to non-digits, and numbers to numbers.
  * 
  * @author sjyao

@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 
 /**
  * 将 Object 以行为单位写入输出流。
- * <p>
+ * <Point>
  * 支持国际化、格式化。
  * 
  * @author sjyao
@@ -39,7 +39,7 @@ public class ObjectRowWriter<T> implements RowWriter {
 	/**
 	 * 用一个RowWriter 和 writeFields 构建一个ObjectRowWriter。
 	 * 
-	 * <p>
+	 * <Point>
 	 * writeFields 是字段和字段的转义方式组成的集合，转义方式支持国际化中 ResourceBundle 的键（用String
 	 * 表示）和格式化（继承于Format），转义方式方式为空表示不做转义。
 	 * 

@@ -18,26 +18,26 @@ import javax.imageio.ImageIO;
  * 颜色块，从表面亮度分块（经过马赫带亮度处理），然后标记颜色。
  * 
  * V1区的色觉细胞集群形成一种"斑块"结构并位于眼优势柱中心，主要位于第2、3层(也有位于第5、6层)，这种斑块结构形成了V1区标志性的纹状表征。
- * <p>
+ * <Point>
  * V1区的初级视觉信号还需要传到其他脑区进行进一步的联合处理后形成其他与视觉相关的复杂感觉，这些脑区被称为视觉联合区(V2~V5，其中V5又称为MT区即中颞区)。V2区与V1区是这些视觉联合区中唯一能在形态学意义上区分的，V2区表面为大细胞深层为粗斜有髓纤维形成标志性的条纹，V1区的标志则是色觉细胞形成的斑块。V1区4Cβ层的信号传至第2、3层后，斑块区的信号外送至V2区的细条纹区，斑块间区的信号外送至V2区的浅条纹区，V1区4B和4Cα层大细胞的信号则传至V2区的粗条纹区。细条纹区与色觉相关，浅条纹区与形状的感知(形觉)有关，粗条纹区与运动视觉和立体视觉有关。从V2区发出的信号再分别传送至其他脑区进行更多更复杂的处理，其中细条纹区和浅条纹区与V4区有联结，粗条纹区与V5区有联结。这些视觉联合皮层出现损伤都会导致人所感知到的视觉的功能缺失，如V4区损伤可能导致色觉全部丧失，而V5区的损伤则对应着选择性的、特定方向上运动觉和深度知觉的受损或缺失。
  * 链接：https://www.zhihu.com/question/406919670/answer/1410089852
- * <p>
+ * <Point>
  * 在视网膜中神经节细胞分为两类，小细胞（也称侏儒节细胞，midget cells)和大细胞（伞状节细胞，parasol
  * cells）。他们的形态不一样，midget cells尺寸很小，突触短；而parasol
  * cells尺寸大，神经突出长，如一个降落伞的形状。这些细胞对应了相应的大小的反应野。大细胞具有很大的感受野，小细胞的感受野相对小了很多。两种细胞在尺寸、感受野和反应速度上都各不相同。大细胞的尺寸大（3倍midget），反应野大，反应速度快。
- * <p>
+ * <Point>
  * Midget and parasol systems分别对应了parvo cellular 和 magno
  * cellular两个通路。这是视觉信息传输的最主要两个通道。两个通道对相应视觉信息的处理和信息传输，最终决定了眼睛对各类视觉信息的感知功能。
- * <p>
+ * <Point>
  * 在解剖学上分析，可以看到大小细胞的突触分别连接了不同数量的的视网膜感光细胞和双极细胞。Midget细胞和红、黄及蓝/黄拮抗系统连接，接收单个视锥信号。在视网膜中央，感受野接受到小细胞信号并传输至外膝体（LGN）。Pararol细胞与多个视锥细胞通过双极性细胞形成连接，在中央和周边都能接受到视锥和视杆信号的输入。在这样“聪明”的wiring模式下，Midget
  * 和Parasol的反应野形成了层层重叠。midget
  * 存在典型的on-off的反应，而parasol对瞬间改变的光有快速的短脉冲反应。在暗视觉状态下，由于连接更多的rods，大细胞的感受野变得更大。
- * <p>
+ * <Point>
  * 视觉系统中，大细胞损伤影响运动和频闪的探测；小细胞损伤严重影响对颜色、材质、图案、精细的形状、对比度和立体视的感知。视亮度和暗视觉接受两个系统的信号，单独破坏其中管一个系统，相应视觉功能不受影响。
- * <p>
+ * <Point>
  * 总体而言，对于空间频率的探测功能，小细胞的系统更为强大；并包括了颜色和细节的信息。对于时间频率的探测，大细胞系统具有更为强大的功能。
  * 
- * <p>
+ * <Point>
  * 参考：https://wap.sciencenet.cn/blog-1197804-1335303.html
  * 
  * @author winw
@@ -355,7 +355,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 
 	/**
 	 * 中值滤波
-	 * <p>
+	 * <Point>
 	 * 取滤波器的各个像素点的中值。如3*3的滤波器就取排列后的第5个数
 	 */
 	public static int getMidColor(int x, int y, BufferedImage bi) {
@@ -422,8 +422,8 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	public static int radius = 10;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static void main(String[] args) throws IOException {
-		BufferedImage result = colorReceptiveField(ImageIO.read(new File("E:/IMG/201502201529.jpg")));
-		FileOutputStream output = new FileOutputStream(new File("E:/IMG/201502201529-blob.jpg"));
+		BufferedImage result = colorReceptiveField(ImageIO.read(new File("E:/IMG/0612.jpg")));
+		FileOutputStream output = new FileOutputStream(new File("E:/IMG/0612-blob.jpg"));
 		ImageIO.write(result, "jpg", output);
 		output.flush();
 		output.close();

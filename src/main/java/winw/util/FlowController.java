@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 流速控制器。
  * 
- * <p>
+ * <Point>
  * 控制低于某个速度运行，如果检测到超前发送，则应当取消本次发送。
  * 
  * <pre>
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * 如果 currentTime - slidingList.getFirst() < 滑动列表所占的合理时间范围，则认为超速。
  * </pre>
  * 
- * <p>
+ * <Point>
  * <i>假设网关一直是全速均匀发送，突然有一条提前到达运营商，那么这一条还是超速的。
  * 要保证不超速，则应当把速度降低到window_size同时到达运营商也不会超速。</i>
  * 
@@ -66,10 +66,10 @@ public class FlowController {
 	/**
 	 * 返回是否超速。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 如果检测到超前发送，则应当取消本次发送。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 返回true表示超速，但不会记入slidingList。返回false表示没有超速并记入slidingList。
 	 * 
 	 * @return 是否超速。

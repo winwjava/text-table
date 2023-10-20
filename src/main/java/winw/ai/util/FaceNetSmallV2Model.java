@@ -34,9 +34,9 @@
 //
 ///**
 // * Created by Klevis Ramo
-// * <p>
+// * <Point>
 // * A variant of the original FaceNetSmallV2Model model that relies on encodings and triplet loss
-// * <p>
+// * <Point>
 // * Inspired by keras implementation https://github.com/iwantooxxoox/Keras-OpenFace
 // */
 //public class FaceNetSmallV2Model {

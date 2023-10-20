@@ -15,48 +15,48 @@ import winw.ai.model.Graph;
 /**
  * 视觉形状，纹理。
  * 
- * <p>
+ * <Point>
  * 转换为 1/0 的二维矩阵。以便于做矩阵变换。
  * 
- * <p>
+ * <Point>
  * 识别物体的形状，采用特征点的方式（类似人脸识别），例如人脸识别128个特征点。使用参考轴（对称轴、曲轴）和特征点构建形状和纹理特征，手势识别、肢体识别。
  * 
- * <p>每一个像素点都可以作为特征点，特征角、特征线、特征点。尺度不变性，边缘点 突变点
- * <p>共线的点，
- * <p>射影变换，尺度不变特征变换 SIFT(Scale-invariant Feature Transform) 
- * <p>视觉有：居中、方向、对齐
+ * <Point>每一个像素点都可以作为特征点，特征角、特征线、特征点。尺度不变性，边缘点 突变点
+ * <Point>共线的点，
+ * <Point>射影变换，尺度不变特征变换 SIFT(Scale-invariant Feature Transform) 
+ * <Point>视觉有：居中、方向、对齐
  * 
- * <p>每一个特征点，建立置信度评分
+ * <Point>每一个特征点，建立置信度评分
  * 
  * 
- * <p>视觉特征是视觉的辨识基础，形状是更高级的认知。
+ * <Point>视觉特征是视觉的辨识基础，形状是更高级的认知。
  * 
  * @author winw
  *
  */
-public class VisualFeature extends Graph {// 需要支持三维形状
+public class VisualFormFeature extends Graph {// 需要支持三维形状
 
 	/**
-	 * <p>
+	 * <Point>
 	 * 点
-	 * <p>
+	 * <Point>
 	 * 线，二维边缘，由点连接起来，直线一般是两个点，曲线由多个点连接起来（需要足够多的点）
 	 * 
-	 * <p>
+	 * <Point>
 	 * 面，由若干个三维点组成，比如人脸，需要超过100个点，点越多越清楚。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 三维形状，需要双目摄像头。
 	 */
 	private List<List<Point>> edgeList;
 
 	private SimpleMatrix matrix = new SimpleMatrix(210, 210);// 形状矩阵
 
-	public VisualFeature() {
+	public VisualFormFeature() {
 		super();
 	}
 
-	public VisualFeature(List<Point> edge) {
+	public VisualFormFeature(List<Point> edge) {
 		this.edgeList = new ArrayList<List<Point>>();
 		this.edgeList.add(edge);
 
@@ -95,23 +95,23 @@ public class VisualFeature extends Graph {// 需要支持三维形状
 		return pointY;
 	}
 
-	public Point getCenter(List<Point> points) {
+	public Point getCenter(List<Point> ps) {
 		double centerX = 0.0;
 		double centerY = 0.0;
-		for (Point point : points) {
-			centerX += point.x;
-			centerY += point.y;
+		for (Point p : ps) {
+			centerX += p.x;
+			centerY += p.y;
 		}
-		return new Point(centerX / points.size(), centerY / points.size());
+		return new Point(centerX / ps.size(), centerY / ps.size());
 	}
 
 	/**
 	 * 比较两个形状是否相同，或者是否相似。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 判断是否是人脸形状，然后判断是谁。
 	 */
-	public double match(VisualFeature other) {// 用平方差，相关系数等
+	public double match(VisualFormFeature other) {// 用平方差，相关系数等
 		return 0;
 	}
 
@@ -168,7 +168,7 @@ public class VisualFeature extends Graph {// 需要支持三维形状
 	 * @param other
 	 * @return
 	 */
-	public double similar(VisualFeature other) {
+	public double similar(VisualFormFeature other) {
 //		在算法相似度量中又有以下几种计算方法：
 //		1、同现相似度
 //		2、欧式距离相似度

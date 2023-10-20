@@ -3,7 +3,7 @@ package winw.ai.model;
 /**
  * 图上的点，一般是顶点，两条边相交的终点。
  * 
- * <p>
+ * <Point>
  * 在三维坐标轴上，用X、Y、Z表示。
  * 
  * @author winw

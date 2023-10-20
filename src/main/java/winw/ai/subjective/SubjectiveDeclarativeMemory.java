@@ -10,10 +10,10 @@ import winw.ai.memory.EventSeries;
 /**
  * 主观陈述性记忆（自传体记忆）。
  * 
- * <p>
+ * <Point>
  * 包括情景记忆、时序记忆。
  * 
- * <p>
+ * <Point>
  * 陈述性记忆是高级认知、强化学习的基础。可以经过强化学习，变为程序性记忆。
  * 
  * @author winw

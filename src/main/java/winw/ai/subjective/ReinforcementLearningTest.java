@@ -9,12 +9,12 @@ package winw.ai.subjective;
  * <li>4、Agent根据预测的Reward和实际的Reward改进对StateA的Action。
  * </ul>
  * 
- * <p>
+ * <Point>
  * 经典非条件反射：是StateX 与另外一个RewardY之间建立联系，并强化学习。
- * <p>
+ * <Point>
  * 操作性条件反射：是ActionX 与另外一个RewardY之间建立联系，并强化学习。
  * 
- * <p>
+ * <Point>
  * 参考： Human-level control through deep reinforcement learning
  * 
  * @author winw

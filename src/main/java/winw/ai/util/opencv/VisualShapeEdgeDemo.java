@@ -17,7 +17,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualFeature;
+import winw.ai.perception.visual.VisualFormFeature;
 
 /**
  * 视觉形状，通过边缘实现。
@@ -65,7 +65,7 @@ public class VisualShapeEdgeDemo {
 		
 		processContours(src, contours);
 		for (MatOfPoint matOfPoint : contours) {
-			VisualShapePanel.show("ShapePanel", new VisualFeature(matOfPoint.toList()));
+			VisualShapePanel.show("ShapePanel", new VisualFormFeature(matOfPoint.toList()));
 
 			// TODO 根据模型将遮挡物体，补全？
 			
@@ -293,9 +293,9 @@ public class VisualShapeEdgeDemo {
 		Point p1 = corners.get(0);
 		int index = 0;
 		for (int i = 1; i < corners.size(); i++) {
-			Point point = corners.get(i);
-			if (p1.x > point.x) {
-				p1 = point;
+			Point p = corners.get(i);
+			if (p1.x > p.x) {
+				p1 = p;
 				index = i;
 			}
 		}

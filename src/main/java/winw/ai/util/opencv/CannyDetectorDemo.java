@@ -29,7 +29,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualFeature;
+import winw.ai.perception.visual.VisualFormFeature;
 
 public class CannyDetectorDemo {
 	private static final int MAX_LOW_THRESHOLD = 100;
@@ -342,9 +342,9 @@ public class CannyDetectorDemo {
 		Point p1 = corners.get(0);
 		int index = 0;
 		for (int i = 1; i < corners.size(); i++) {
-			Point point = corners.get(i);
-			if (p1.x > point.x) {
-				p1 = point;
+			Point p = corners.get(i);
+			if (p1.x > p.x) {
+				p1 = p;
 				index = i;
 			}
 		}

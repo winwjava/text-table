@@ -15,7 +15,7 @@ import winw.ai.subjective.SubjectiveDeclarativeMemory;
 /**
  * 智能主体。包含神经系统的智能主体可以更有效适应环境，改造环境和利用环境。
  * 
- * <p>
+ * <Point>
  * 智能体基于神经网络，包含有记忆系统，感知系统，自主反应系统和主观反应系统。
  * 
  * @author winw
@@ -52,13 +52,13 @@ public class Agent extends CerebralCortex {
 
 	/**
 	 * 事件关联学习。
-	 * <p>
+	 * <Point>
 	 * 外显记忆（自传式记忆，自我），3岁之前的记忆基本都会丢失，形成稳定的人格。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 当一个 Action 完成后，预期和实际不尽相同，而结果会作为一个事件记忆与这个 Action 关联。 以便在下次 执行 Action 时提供
 	 * 主观价值评估的参考。
-	 * <p>
+	 * <Point>
 	 * 所以，事件关联是强化学习的重要一环。有些事件关联是很容易的，比如被火烧了一次，便可以学会火是危险的，相反，普通人被树上掉落的苹果砸到很难关联到万有引力。
 	 * 除非他的大脑正在思考着类似的事情，正好被关联到。这正是大脑的联想功能。
 	 * 
@@ -102,10 +102,10 @@ public class Agent extends CerebralCortex {
 
 	/**
 	 * 主观价值评估。
-	 * <p>
+	 * <Point>
 	 * 一个Action 的 主观价值，需要多种因素综合研判。纹状体、中脑腹侧被盖区、外侧僵核，以及黒质，都是用来发挥这一作用。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 一个事物相关的正面价值，经过纹状体反映在 VTA ，相关的负面价值经过纹状体后先通过VP反映到LHb，然后也反映到VTA。 最后VTA得到综合的价值。
 	 * 
 	 */
@@ -131,7 +131,7 @@ public class Agent extends CerebralCortex {
 
 	/**
 	 * 海马，短时记忆。可以保持几天或几周的时间。
-	 * <p>
+	 * <Point>
 	 * 对注意力中发生的事件，按序记录下来。短期保持。
 	 */
 	protected void hippocampusShortTermMemory() {
@@ -157,12 +157,12 @@ public class Agent extends CerebralCortex {
 	 * <li>4、Agent根据预测的Reward和实际的Reward改进对StateA的Action。
 	 * </ul>
 	 * 
-	 * <p>
+	 * <Point>
 	 * 经典非条件反射：是StateX 与另外一个RewardY之间建立联系，并强化学习。
-	 * <p>
+	 * <Point>
 	 * 操作性条件反射：是ActionX 与另外一个RewardY之间建立联系，并强化学习。
 	 * 
-	 * <p>
+	 * <Point>
 	 * 参考： Human-level control through deep reinforcement learning
 	 * 
 	 */

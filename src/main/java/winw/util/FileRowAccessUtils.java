@@ -90,7 +90,7 @@
 // * </tr>
 // * </table>
 // * 
-// * <p>
+// * <Point>
 // * Default, Auto-detector the character files's charset, including TXT and CSV.
 // * Please see
 // * <a href="http://code.google.com/p/juniversalchardet/"><i> juniversalchardet
@@ -435,17 +435,17 @@
 //	/**
 //	 * Read the first character, detecting and skipping the BOM character. if
 //	 * the first character is not a BOM, then reset the <code>Reader</code>.
-//	 * <p>
+//	 * <Point>
 //	 * <a href="http://www.unicode.org/glossary/#byte_order_mark">Byte Order
 //	 * Mark (BOM)</a>. The Unicode character U+FEFF when used to indicate the
 //	 * byte order of a text.
 //	 * </p>
-//	 * <p>
+//	 * <Point>
 //	 * A BOM can be used as a signature no matter how the Unicode text is
 //	 * transformed: UTF-16, UTF-8, or UTF-32. The exact bytes comprising the BOM
 //	 * will be whatever the Unicode character U+FEFF is converted into by that
 //	 * transformation format.
-//	 * <p>
+//	 * <Point>
 //	 * 
 //	 * @param reader
 //	 *            An Reader

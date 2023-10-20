@@ -9,7 +9,7 @@ import winw.ai.model.Model;
 /**
  * 主观程序性记忆。
  * 
- * <p>
+ * <Point>
  * 强化学习，对运动的学习，前馈学习和反馈学习。
  * 
  * @author winw

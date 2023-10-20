@@ -14,7 +14,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualFeature;
+import winw.ai.perception.visual.VisualFormFeature;
 
 /**
  * 图像分割，用到了拉普拉斯算法等。
@@ -148,7 +148,7 @@ class ImageSegmentation {
 			
 			
 			
-			VisualShapePanel.show("MatOfPoint",new VisualFeature(contours.get(i).toList()));
+			VisualShapePanel.show("MatOfPoint",new VisualFormFeature(contours.get(i).toList()));
 		}
 
 		

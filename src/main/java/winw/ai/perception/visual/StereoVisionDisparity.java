@@ -19,13 +19,13 @@ import com.github.sarxos.webcam.WebcamPanel;
 /**
  * 视觉双目视差。
  * 
- * <p>
+ * <Point>
  * 在V4脑区，用视差边界作为视觉刺激得到的朝向功能图和明暗边界的朝向功能图一致，提示V4对不同来源的边界信息进行了整合。
  * 与此对应的是，在较低级的脑区V1和V2却没有发现这种视差边界的朝向功能图。这表明V4在从视差信息到立体形状信息的
  * 转换过程中发挥了重要的作用。这是首次在灵长类视觉通路中发现基于视差形状信息（shape-from-disparity）的功能结构，
  * 为进一步研究立体形状感知奠定了基础。
  * 
- * <p>
+ * <Point>
  * 由明暗边界 和 视差信息 在V4脑区整合形成立体形状信息。
  * 
  * @author winw
@@ -52,7 +52,7 @@ public class StereoVisionDisparity implements ActionListener {
 		BufferedImage stereo = ImageIO.read(new File("E:/IMG/0612-StereoVision.jpg"));// 1280, 480
 		BufferedImage leftImage = stereo.getSubimage(0, 0, 640, 480);
 		BufferedImage rightImage = stereo.getSubimage(640, 0, 640, 480);
-		BufferedImage result = VisualEdge.edge(rightImage);
+		BufferedImage result = VisualEdge.show(rightImage);
 		FileOutputStream output = new FileOutputStream(new File("E:/IMG/0612-StereoVision-edge-r.jpg"));
 		ImageIO.write(result, "jpg", output);
 		output.close();
@@ -103,4 +103,5 @@ public class StereoVisionDisparity implements ActionListener {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	// TODO 多元线性拟合；推测出三维平面或曲面；
 }

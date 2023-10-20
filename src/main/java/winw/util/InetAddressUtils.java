@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 /**
  * A collection of utilities relating to InetAddresses.
  * 
- * <p>
+ * <Point>
  * Note: now only support IPv4 address.
  * 
- * <p>
+ * <Point>
  * TODO Support hostname.
  * 
  * @author sjyao
@@ -65,7 +65,7 @@ public final class InetAddressUtils {
 	 * Returns true if the parameter <code>address</code> is in the range of
 	 * <code>limitAddresses</code>.
 	 * 
-	 * <p>
+	 * <Point>
 	 * The parameter <code>limitAddress</code> support:
 	 * 
 	 * <ol>
