@@ -34,7 +34,6 @@ Model-free RL是一种常见的强化学习算法。model-free RL主要依赖fro
 图3：强化学习中主体（Agent）与环境（Environment）的关系
 
 
-http://news.cctv.com/world/20071205/100041.shtml  
 http://life.ecnu.edu.cn/da/73/c18135a383603/page.htm  
 https://mp.weixin.qq.com/s/mPrHBOu_f7OpyhxZHKTrFA  
 Neftci, E. O., & Averbeck, B. B. (2019).Reinforcement learning in artificial and biological systems. Nature Machine Intelligence, 1(3),133-143. doi: 10.1038/s42256-019-0025-4
@@ -80,10 +79,13 @@ https://mp.weixin.qq.com/s/v6xXHbZ_NcuS2XaUF37Oyg
 
 神经科学的这个重大发现打开了大脑记忆模型的大门，找到了大脑中抽象的空间位置表达模型（图表征），我认为这是图模型在大脑认知模型中的最有力的证据（拓扑图是图模型中的一种）。其他的认知行为也与此类似，比如物体识别、形状识别等等。
 
+在CVPR-2019中，剑桥大学提出了一种新的占据网络模型： Occupancy Networks，一种新的基于学习的三维重建方法。占据网络隐式地将三维曲面表示为深度神经网络分类器的连续决策边界。
 
 
 https://doi.org/10.1016/j.cell.2021.07.010
 https://mp.weixin.qq.com/s/to9ns244qvlyfarEQpD0xw
+https://github.com/LMescheder/Occupancy-Networks
+CVPR-2019 Occupancy Networks: Learning 3D Reconstruction in Function Space
 
 ##时间印记
 科学家研究表明，人类大脑海马体中存在一种“时间细胞”，时间细胞的链式信号反映了事件的时间顺序。对于一般的强化学习来说，主观行动Action和行动结果Reward的关系在被学习之前必须存在某种联系，这种联系大部分是有时间先后顺序的关系，而时间细胞组成的时间联系是强化学习的最佳介导关系（空间位置或其他关系也可以）。
@@ -297,16 +299,29 @@ http://www.ziint.zju.edu.cn/index.php/event/details.html?tid=415
 
 人脸占其中的一个区域。
 
+
+##三维重建
+Tesla 在北京时间2022年10月1日的AI Day中展现了Occupancy Network 感知技术（立体视觉中有经典的 occupancy grid模型）。基本的思想是将三维空间划分成体素voxel，通过0/1赋值对voxel进行二分类：有物体的voxel赋值为1，表示voxel被物体占据；没有物体的voxel被赋值为0。当然实际中的赋值可以是概率值，表示voxel存在物体的概率，这个概率也可以理解成密度或者透明度。
+
+一个2D images先经过特征提取，再利用transformer的网络结构将2D特征恢复为3D 空间特征。
+CVPR-2019 Occupancy Networks: Learning 3D Reconstruction in Function Space
+https:github.com/tom-roddick/mono-semantic-maps
+CVPR-2022 MonoScene: Monocular 3D Semantic Scene Completion
+https://avg.is.tuebingen.mpg.de/publications/occupancy-networks
 ##图像理解
 图像识别只是猜测80%或者99%是一个人脸，如果要主观100%确定是人脸则需要通过已有主观知识做分析抉择和证实。图像理解是一个“猜测与印证”的过程，一定是有强化学习、大脑抉择系统参与。
 
 ##程序实现
 
+强化学习
 设计一个5*5或 9*9的迷宫游戏，一个入口和出口，也可以增加陷阱或死胡同，经过强化学习，探索出走出迷宫的正确路径。
-
 https://zhuanlan.zhihu.com/p/343668723
+
+立体视觉
 
 ## 自然语言
 
-ChatGPT
-从人类反馈中强化学习(RLHF, Reinforcement Learning from Human Feedback)， 根据人类偏好的奖励模型进行优化。根据Goodhart's law，奖励模型是一个不完美的代理。
+2022年11月30日发布的ChatGPT（全名：Chat Generative Pre-trained Transformer），它能够基于在预训练阶段所见的模式和统计规律，来生成回答，还能根据聊天的上下文进行互动，真正像人类一样来聊天交流。
+这个模型从人类反馈中强化学习(RLHF, Reinforcement Learning from Human Feedback)， 根据人类偏好的奖励模型进行优化。
+
+根据Goodhart's law，奖励模型是一个不完美的代理。
