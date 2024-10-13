@@ -14,7 +14,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualFormFeature;
+import winw.ai.perception.visual.VisualSharpe;
 
 public class ImageMatchTemplate {
 
@@ -31,7 +31,7 @@ public class ImageMatchTemplate {
 	private static final int RATIO = 3;
 	private static final int KERNEL_SIZE = 3;
 
-	public static List<VisualFormFeature> shapeList = new ArrayList<VisualFormFeature>();
+	public static List<VisualSharpe> shapeList = new ArrayList<VisualSharpe>();
 
 	private synchronized void getShapeList() {
 		String imagePath = "e:\\ww.png";
@@ -61,8 +61,8 @@ public class ImageMatchTemplate {
 		System.out.println("contours size: " + contours.size());
 
 		for (int i = 0, len = contours.size(); i < len; i++) {// 5 绘制轮廓
-			VisualShapePanel.show("MatOfPoint", new VisualFormFeature(contours.get(i).toList()));
-			shapeList.add(new VisualFormFeature(contours.get(i).toList()));
+			VisualShapePanel.show("MatOfPoint", new VisualSharpe(contours.get(i).toList()));
+			shapeList.add(new VisualSharpe(contours.get(i).toList()));
 		}
 		
 		// 只能是边缘与边缘的形状比较。

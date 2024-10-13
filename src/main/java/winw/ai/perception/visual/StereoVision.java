@@ -172,4 +172,100 @@ public class StereoVision {
 	// 由明暗边界 和 视差信息 在V4脑区整合形成立体形状信息。
 
 	// TODO 多元线性拟合；推测出三维平面或曲面；
+
+	// 块匹配算法计算视差图
+    public static int[][] blockMatching(int[][] leftImage, int[][] rightImage, int blockSize, int maxDisparity) {
+        int rows = leftImage.length;
+        int cols = leftImage[0].length;
+        int[][] disparityMap = new int[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                int minDiff = Integer.MAX_VALUE;
+                int minDisparity = -1;
+
+                for (int d = 0; d <= maxDisparity; d++) {
+                    int leftBlockSum = blockSum(leftImage, i, j, blockSize);
+                    int rightBlockSum = blockSum(rightImage, i - d, j, blockSize);
+
+                    int diff = Math.abs(leftBlockSum - rightBlockSum);
+
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        minDisparity = d;
+                    }
+                }
+
+                disparityMap[i][j] = minDisparity;
+            }
+        }
+
+        return disparityMap;
+    }
+
+    // 计算块的像素和
+    private static int blockSum(int[][] image, int row, int col, int blockSize) {
+        int sum = 0;
+        for (int i = row; i < row + blockSize; i++) {
+            for (int j = col; j < col + blockSize; j++) {
+                if (i < image.length && j < image[0].length) {
+                    sum += image[i][j];
+                }
+            }
+        }
+        return sum;
+    }
+
+    // 视差图转换为深度图
+    public static float[][] disparityToDepth(int[][] disparityMap, float focalLength, float baseline) {
+        int rows = disparityMap.length;
+        int cols = disparityMap[0].length;
+        float[][] depthMap = new float[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                int disparity = disparityMap[i][j];
+                if (disparity > 0) { // 确保视差值有效
+                    depthMap[i][j] = (focalLength * baseline) / disparity;
+                }
+            }
+        }
+
+        return depthMap;
+    }
+    
+    /**
+     * 视差图同一个场景在两个相机下成像的像素的位置偏差，因为通常下两个双目相机是水平放置的，所以该位置偏差一般体现在水平方向。比如场景中的X点在左相机是x坐标，那么在右相机成像则是（x+d）坐标。d就是视差图中x坐标点的值。深度图是指场景中每个点离相机的距离。对双目成像来说，视差图和深度图在某种程度上是等价的，知道了两个相机的相关参数，是可以将视差图转换为深度图的。
+     */
+    public void disparity() {
+    	
+    }
+    
+    public static void main(String[] args) {
+        // 假设leftImage和rightImage已经加载
+        int[][] leftImage = /* ... */;
+        int[][] rightImage = /* ... */;
+
+        // 图像预处理
+        int[][] preprocessedLeft = preprocessImage(leftImage);
+        int[][] preprocessedRight = preprocessImage(rightImage);
+
+        // 块匹配算法计算视差图
+        int blockSize = 5; // 块的大小
+        int maxDisparity = 16; // 最大视差
+        int[][] disparityMap = blockMatching(preprocessedLeft, preprocessedRight, blockSize, maxDisparity);
+
+        // 视差图转换为深度图
+        float focalLength = 800.0f; // 相机焦距，单位：像素
+        float baseline = 0.1f; // 相机基线距离，单位：米
+        float[][] depthMap = disparityToDepth(disparityMap, focalLength, baseline);
+
+        // 输出深度图
+        for (float[] row : depthMap) {
+            for (float depth : row) {
+                System.out.printf("%.2f ", depth);
+            }
+            System.out.println();
+        }
+    }
 }

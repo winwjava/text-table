@@ -17,7 +17,7 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import winw.ai.perception.visual.VisualFormFeature;
+import winw.ai.perception.visual.VisualSharpe;
 
 /**
  * 视觉形状，通过边缘实现。
@@ -34,8 +34,8 @@ public class VisualShapeEdgeDemo {
 
 	public void run(String[] args) {
 		// Load the image
-		String filename = args.length > 0 ? args[0] : "e:\\cards.png";
-		filename = "e:\\ww.png";
+		String filename = args.length > 0 ? args[0] : "D:/file/05.jpg";
+		filename = "D:/file/05.jpg";
 //		filename = "e:\\operant-conditioning.jpg";
 		Mat src = Imgcodecs.imread(filename);
 		if (src.empty()) {
@@ -65,7 +65,7 @@ public class VisualShapeEdgeDemo {
 		
 		processContours(src, contours);
 		for (MatOfPoint matOfPoint : contours) {
-			VisualShapePanel.show("ShapePanel", new VisualFormFeature(matOfPoint.toList()));
+			VisualShapePanel.show("ShapePanel", new VisualSharpe(matOfPoint.toList()));
 
 			// TODO 根据模型将遮挡物体，补全？
 			

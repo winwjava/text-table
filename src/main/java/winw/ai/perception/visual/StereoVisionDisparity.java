@@ -38,9 +38,11 @@ public class StereoVisionDisparity implements ActionListener {
 	// 需要先将明暗边界合并为更大的边界（V1 到 V2）
 
 	public static void main(String[] args) throws IOException {
-		BufferedImage result = VisualBlob.colorReceptiveField(ImageIO.read(new File("E:/IMG/0612-StereoVision.jpg")));
+		BufferedImage image = ImageIO.read(new File("D:/file/05-StereoVision.jpg"));
+		BufferedImage resultImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+		VisualBlob.colorReceptiveField(resultImage, image);
 		FileOutputStream output = new FileOutputStream(new File("E:/IMG/0612-StereoVision-blob.jpg"));
-		ImageIO.write(result, "jpg", output);
+		ImageIO.write(resultImage, "jpg", output);
 		output.flush();
 		output.close();
 
@@ -50,7 +52,7 @@ public class StereoVisionDisparity implements ActionListener {
 
 	public static void main3(String[] args) throws IOException {
 		BufferedImage stereo = ImageIO.read(new File("E:/IMG/0612-StereoVision.jpg"));// 1280, 480
-		BufferedImage leftImage = stereo.getSubimage(0, 0, 640, 480);
+//		BufferedImage leftImage = stereo.getSubimage(0, 0, 640, 480);
 		BufferedImage rightImage = stereo.getSubimage(640, 0, 640, 480);
 		BufferedImage result = VisualEdge.show(rightImage);
 		FileOutputStream output = new FileOutputStream(new File("E:/IMG/0612-StereoVision-edge-r.jpg"));

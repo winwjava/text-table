@@ -9,7 +9,8 @@ package winw.ai.perception.visual;
 public class Line {
 
 	int orientation;// 方向
-	
+	double slope;
+
 	int x1;
 	int y1;
 	int x2;
@@ -22,10 +23,18 @@ public class Line {
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+		
+        this.slope = Math.tan(Math.toRadians(orientation));
+
+//        System.out.println("tan("+orientation+") slope: " + this.slope);
 	}
 
 	public int getOrientation() {
 		return orientation;
+	}
+
+	public double getSlope() {
+		return slope;
 	}
 
 	public void setOrientation(int orientation) {

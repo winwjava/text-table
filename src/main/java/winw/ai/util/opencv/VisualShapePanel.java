@@ -16,18 +16,18 @@ import javax.swing.JScrollPane;
 import org.opencv.core.Core;
 import org.opencv.core.Point;
 
-import winw.ai.perception.visual.VisualFormFeature;
+import winw.ai.perception.visual.VisualSharpe;
 
 public class VisualShapePanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-	protected VisualFormFeature shape;
+	protected VisualSharpe shape;
 
-	public VisualFormFeature getShape() {
+	public VisualSharpe getShape() {
 		return shape;
 	}
 
-	public void setShape(VisualFormFeature shape) {
+	public void setShape(VisualSharpe shape) {
 		this.shape = shape;
 	}
 
@@ -46,12 +46,12 @@ public class VisualShapePanel extends JPanel {
 		for (List<Point> edge : edgeList) {
 //			g.drawPolygon(xPoints, yPoints, nPoints);// 多边形
 //			g.drawPolyline(xPoints, yPoints, nPoints);// 多个线段连接起来
-			g.drawPolygon(VisualFormFeature.getXPoints(edge), VisualFormFeature.getYPoints(edge), edge.size());
+			g.drawPolygon(VisualSharpe.getXPoints(edge), VisualSharpe.getYPoints(edge), edge.size());
 		}
 
 	}
 
-	public static void show(String title, VisualFormFeature shape) {
+	public static void show(String title, VisualSharpe shape) {
 		JFrame frame = new JFrame(title);
 		frame.setVisible(true);
 		JPanel container = new JPanel();
@@ -83,7 +83,7 @@ public class VisualShapePanel extends JPanel {
 		pointList.add(new Point(100.0, 100.0));
 //		VisualShape visualShape = new VisualShape(pointList);
 //		visualShape.affine();
-		VisualShapePanel.show("ShapePanel", new VisualFormFeature(pointList));
+		VisualShapePanel.show("ShapePanel", new VisualSharpe(pointList));
 		
 	}
 

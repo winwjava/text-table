@@ -30,7 +30,7 @@ public class FindContoursDemo {
 	 */
 	public static void contour() {
 		// 1 获取原图
-		Mat src = Imgcodecs.imread("e:\\cards.png");
+		Mat src = Imgcodecs.imread("D:/file/05.jpg");
 		// 2 图片灰度化
 		Mat gary = new Mat();
 		Imgproc.cvtColor(src, gary, Imgproc.COLOR_RGB2GRAY);

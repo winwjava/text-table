@@ -8,10 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
@@ -32,17 +32,14 @@ import javax.imageio.ImageIO;
  * 
  * https://zhuanlan.zhihu.com/p/504473111?utm_id=0
  * 
- * <Point>
- * 视网膜上接受光信号的细胞叫Photoreceptor（感光细胞），并且分为两种类型，Rods（视杆细胞）和Cones（视锥细胞）。
+ * <Point> 视网膜上接受光信号的细胞叫Photoreceptor（感光细胞），并且分为两种类型，Rods（视杆细胞）和Cones（视锥细胞）。
  * Rods只有在非常低的光照下才启动，Cones在较亮的光照下工作，并且获得颜色信息。Cones的大小在1000nm左右，很接近
  * 最大可见波长（这暗示着人类可见光最大波长，或者说Cones不能再小了）。每个人的视网膜上包含120 million的Rods和6
  * million的Cones，但千万不要认为人感知颜色的能力就弱于感知亮度的能力。因为6 million
  * Cones绝大部分集中在Fovea（中央窝），我们可以通过转动眼睛将中央窝对准感兴趣的区域。
  * 
- * <Point>
- * 方位选择性（orientation selectivity）
- * 所谓方位，也叫做“空间朝向”（orientation），指的是一条短线的倾斜角度（范围是0-180°，见下图）。
- * <Point>
+ * <Point> 方位选择性（orientation selectivity）
+ * 所谓方位，也叫做“空间朝向”（orientation），指的是一条短线的倾斜角度（范围是0-180°，见下图）。 <Point>
  * 初级视觉皮层细胞有一种重要的性质，就是“方位选择性”。换句话说，绝大部分初级视觉皮层细胞，都有一个“最喜欢的方位”（preferred
  * orientation，中文习惯翻译成“最优方位”）。
  * 给一个初级视觉皮层细胞看不同方位的短棒，当短棒的方位等于这个细胞的最优方位时，细胞的反应就达到最强。如果短棒的方位逐渐偏离最优方位，细胞的反应就越来越弱。如果短棒的方位和最优方位垂直，那么此时细胞的反应就达到最低点。
@@ -50,10 +47,9 @@ import javax.imageio.ImageIO;
  * 初级视觉皮层细胞的上述性质，被称为“方位选择性”。类似的，还存在“运动方向选择性”、“空间频率/时间频率选择性”（很快会讲到）、“颜色选择性”等等。
  * 这些选择性，本质上使得初级视觉皮层具备了检测并编码各种视觉特征的能力。
  * 
- * <Point>
- * https://zhuanlan.zhihu.com/p/134596480 https://zhuanlan.zhihu.com/p/20579210
- * https://zhuanlan.zhihu.com/p/186999395 https://zhuanlan.zhihu.com/p/150301718
- * https://daily.zhihu.com/story/9646872
+ * <Point> https://zhuanlan.zhihu.com/p/134596480
+ * https://zhuanlan.zhihu.com/p/20579210 https://zhuanlan.zhihu.com/p/186999395
+ * https://zhuanlan.zhihu.com/p/150301718 https://daily.zhihu.com/story/9646872
  * https://foundationsofvision.stanford.edu/chapter-5-the-retinal-representation/
  * https://foundationsofvision.stanford.edu/chapter-10-motion-and-depth/
  * https://foundationsofvision.stanford.edu/chapter-9-color/
@@ -66,9 +62,9 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	/**
 	 * 亮度0~255，亮度差异大于10，则认为是边缘。RGB经过灰度处理后R=G=B，只取其中一个值比较即可
 	 */
-	public static int RANGE = 13;// 明暗梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
+	public static int RANGE = 15;// 明暗梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
 
-	public static int radius = 7;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
+	public static int radius = 3;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static BufferedImage show(BufferedImage image) {
 //		BufferedImage scaledImage = new BufferedImage(image.getWidth() / 2, image.getHeight() / 2, image.getType());
@@ -77,6 +73,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //				image.getScaledInstance(image.getWidth() / 2, image.getHeight() / 2, BufferedImage.SCALE_FAST), 0, 0,
 //				null);
 //		graphics.dispose();
+
 		int[][] grayImage = brightnessReceptiveField(image);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
 
 		BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
@@ -87,32 +84,35 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	/**
 	 * 视网膜亮度感受野。
 	 * 
-	 * <Point>
-	 * 先通过同心圆拮抗式感受野重新计算亮度。
-	 * <Point>
+	 * <Point> 先通过同心圆拮抗式感受野重新计算亮度。 <Point>
 	 * 同心圆拮抗式感受野，由一个兴奋作用强的中心机制和一个作用较弱但面积更大的抑制性周边机制构成[Rodieck 1965]．
 	 * 这两个具有相互拮抗作用的机制，都具有高斯分布的性质，但中心机制具有更高的峰敏感度，而且彼此方向相反，故称相减关系，又称高斯差模型(Difference
 	 * of Gaussians，DOG)．
 	 * 
-	 * <Point>
-	 * 马赫带效应，处于明暗边界稍稍偏向亮处位置，感受野的反应最强烈，因为其感受野兴奋性中心全部被光照射，而抑制性周边没有全部被光照。
+	 * <Point> 马赫带效应，处于明暗边界稍稍偏向亮处位置，感受野的反应最强烈，因为其感受野兴奋性中心全部被光照射，而抑制性周边没有全部被光照。
 	 * 相反，处在边界偏向暗处时，因为只有小部分抑制性周边受到光照，故其反应比黑暗中无刺激时的神经节细胞自发放电水平还要低。
 	 * 这说明，明暗边界感受野并不是根据一个像素得到的，而是通过周围像素的加权平均得到，并且需要通过拮抗式计算。
 	 * 
-	 * <Point>
-	 * 马赫带的好处是，可以增强明暗边界的对比度，更有利于计算物体边缘和轮廓。
+	 * <Point> 马赫带的好处是，可以增强明暗边界的对比度，更有利于计算物体边缘和轮廓。
 	 * 
 	 * @return
 	 */
 	public static int[][] brightnessReceptiveField(BufferedImage image) {
 
+		BufferedImage grayII = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 		int[][] grayImage = new int[image.getWidth()][image.getHeight()];
 		for (int m = image.getMinX(); m < image.getWidth(); m++) {
 			for (int n = image.getMinY(); n < image.getHeight(); n++) {
 				// image.setRGB 实际是sRGB，存储的还有Alpha，存取RGB的值，需要通过Color。
 				grayImage[m][n] = brightness(image.getRGB(m, n));// 灰度处理
+				grayII.setRGB(m, n, grayImage[m][n]);
 			}
 		}
+
+		// 高斯模糊，增强边界
+		int[][] gaussianImage = filteringGaussian(grayII, 2);
+
+		grayImage = gaussianImage;
 
 		// 马赫带效应处理，构造同心圆拮抗式感受野。将明暗边界处的亮侧增强亮度，暗测降低亮度。
 		// 在灰度处理的基础上，考虑视网膜感受野的马赫带效应，增强明暗边界的对比度，更有利于计算物体边缘和轮廓。
@@ -171,27 +171,23 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	}
 
 	/**
-	 * V1区感受野，分为简单细胞感受野、复杂细胞感受野、超复杂细胞的感受野。
-	 * <Point>
+	 * V1区感受野，分为简单细胞感受野、复杂细胞感受野、超复杂细胞的感受野。 <Point>
 	 * 外膝体细胞和节细胞一样具有开光（on）中心区和关光(off)中心区。不同的是，外膝体细胞感受野对视网膜不同区域明暗差别更灵敏。
 	 * 皮层细胞感受野(Hubel, D.H, Wiesel.T.N, 1970)皮层分为简单、复杂和超复杂细胞（hypercomplex
 	 * cells），对光信号刺激均具有方向选择性。
 	 * 
-	 * <Point>
-	 * 简单细胞的感受野也分成开光（on）中心区和关光（off）中心区，但两区分界线不是圆而是直线， 其最佳刺激是有一定朝向和位置的线条。
+	 * <Point> 简单细胞的感受野也分成开光（on）中心区和关光（off）中心区，但两区分界线不是圆而是直线， 其最佳刺激是有一定朝向和位置的线条。
 	 * 
-	 * <Point>
-	 * 复杂细胞也要求有一定朝向的线条刺激，但其感受野无开光区、关光区之分，且不要求刺激有精确位置。
-	 * <Point>
+	 * <Point> 复杂细胞也要求有一定朝向的线条刺激，但其感受野无开光区、关光区之分，且不要求刺激有精确位置。 <Point>
 	 * 超复杂细胞的感受野由中央兴奋区和侧旁抑制区构成，要求刺激有一定的朝向和运动方向，还会要求线条有端点或拐角等（而非极长的直线）。
 	 * 
 	 * 17区主要是简单细胞，也有复杂细胞；18区中90%是复杂细胞，其余为超复杂细胞；19区超复杂细胞则占一半。
 	 * 
 	 * 
-	 * <Point>
-	 * V2感受野的高分辨率空间结构可以分为三类（V2区由三种不同条带构成，可以通过内源信号成像方法观察到）： 1:和V1细胞感受野类似型;
+	 * <Point> V2感受野的高分辨率空间结构可以分为三类（V2区由三种不同条带构成，可以通过内源信号成像方法观察到）： 1:和V1细胞感受野类似型;
 	 * 2:细长型(高长宽比); 3:复杂结构型(含有多朝向成分)。 这些V2细胞感受野的结构的形成均可以通过V1细胞感受野的整合来解释。
-	 * @return 
+	 * 
+	 * @return
 	 */
 	public static LineGrid[][] edgeReceptiveField(BufferedImage image, int[][] grayImage) {
 
@@ -207,13 +203,13 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		// TODO 外侧膝状体是二维数据，视觉皮层功能柱是一个List，相同方向相近位置的放在一起；方便合并运算；
 
 		// 将线条放进 50*50的网格里，然后在周围网格里搜索。
-		LineGrid[][] lineGridArray = new LineGrid[grayImage.length / (radius * 2)][grayImage[0].length / (radius * 2)];
+		LineGrid[][] edgeGrid = new LineGrid[grayImage.length][grayImage[0].length];
 
 		for (int i = 0 + radius + 1; i < grayImage.length - radius - 2; i++) {
 			for (int j = 0 + radius + 1; j < grayImage[0].length - radius - 2; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (detected[i][j] <= 0) {
-					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 1, lineGridArray);
+					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 1, edgeGrid);
 				}
 			}
 		}
@@ -223,13 +219,13 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 			for (int j = 0 + radius + 1; j < grayImage[0].length - radius - 2; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (detected[i][j] <= 0) {
-					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 2, lineGridArray);
+					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 2, edgeGrid);
 				}
 			}
 		}
 
 //		complexCellReceptiveField(image, lineGridArray);
-		return lineGridArray;
+		return edgeGrid;
 	}
 
 	static int count = 0;
@@ -260,19 +256,15 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	/**
 	 * 条形光斑，对线条或者边缘的感受器。简单细胞，开放的条形光斑。
 	 * 
-	 * <Point>
-	 * 简单细胞的感受野来自于将一系列的 LGN 细胞输入的转换，许多环状的感受野就能组成一条线。
+	 * <Point> 简单细胞的感受野来自于将一系列的 LGN 细胞输入的转换，许多环状的感受野就能组成一条线。
 	 * 
-	 * <Point>
-	 * 中心区域为开的区域，即刺激能够激活的区域。而关的周围区域则分布在两侧，即刺激难以激活的区域。 在视觉皮层，对于这样感受野的细胞，我们称之为简单细胞。
+	 * <Point> 中心区域为开的区域，即刺激能够激活的区域。而关的周围区域则分布在两侧，即刺激难以激活的区域。
+	 * 在视觉皮层，对于这样感受野的细胞，我们称之为简单细胞。
 	 * 
-	 * <Point>
-	 * 空间上这些简单细胞在视觉皮层中通常限缩到非常狭窄的区域，它们最好的刺激方式是条带光斑，并且它们对于光斑的朝向非常敏感，对于刺激有
+	 * <Point> 空间上这些简单细胞在视觉皮层中通常限缩到非常狭窄的区域，它们最好的刺激方式是条带光斑，并且它们对于光斑的朝向非常敏感，对于刺激有
 	 * 开和关的区域拮抗。当发散光覆盖整个开和关的区域时，不能够刺激这些细胞。简单细胞因此能被看成是视觉特定区域里面对线条或者边缘的感受器。
 	 * 
-	 * <Point>
-	 * 条形光斑的两端是开放区域，对宽度有限缩。有利于拼出更长的线条。
-	 * <Point>
+	 * <Point> 条形光斑的两端是开放区域，对宽度有限缩。有利于拼出更长的线条。 <Point>
 	 * 一旦条形光斑固定好一定高度，增长不会产生额外的刺激效果，相反，不管在条形光斑哪边的宽度增加都会降低视觉神经元的放电频率。
 	 * 因此这些视觉细胞的感受野可以被描绘成如图 3c所示。
 	 * 中心区域为开的区域，即刺激能够激活的区域。而关的周围区域则分布在两侧，即刺激难以激活的区域。在视觉皮层，
@@ -283,7 +275,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 * @return
 	 */
 	public static boolean simpleCellReceptiveField(BufferedImage image, int[][] blurImage, int x0, int y0, int radius,
-			int[][] detected, int width, LineGrid[][] lineGridArray) {// orientationSelectivity
+			int[][] detected, int width, LineGrid[][] edgeGrid) {// orientationSelectivity
 		// 亮度分界
 		// 区域汇聚
 
@@ -296,11 +288,45 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		int grayT = blurImage[x0][y0 + width];
 		int grayD = blurImage[x0][y0 - 1];
 
-		// 如果中心点周围4个点没有亮度差异，则跳过，否则开始找边缘。
-		if (Math.abs(grayR - gray) < RANGE && Math.abs(gray - grayL) < RANGE && Math.abs(gray - grayT) < RANGE
-				&& Math.abs(gray - grayD) < RANGE) {
+
+		// 计算对比度，对比度高时，将RANGE调大，否则调小。
+        int minBrightness = gray;// (rgb >> 16) & 0xFF; // 取红色分量作为亮度
+        int maxBrightness = gray;
+
+        // 计算视野中的对比度。
+		for (int j = x0 - radius; j < x0 + radius; j++) {
+			for (int k = y0 - radius; k < y0 + radius; k++) {
+				minBrightness = Math.min(minBrightness, blurImage[j][k]);
+                maxBrightness = Math.max(maxBrightness, blurImage[j][k]);
+			}
+		}
+		
+		int cc = maxBrightness - minBrightness;
+		
+		int range = 20;
+//		System.out.println(maxBrightness + " - "+ minBrightness +" = "+ cc);
+		
+		if(cc < 15) {
 			return false;
 		}
+		
+//		range = cc / 2;
+		
+		if(cc > 60) {
+			range = 30;
+		} else if(cc > 30) {
+			range = 20;
+		}
+//		else {
+//			range = 10;
+//		}
+		
+		// 如果中心点周围4个点没有亮度差异，则跳过，否则开始找边缘。
+		if (Math.abs(grayR - gray) < range && Math.abs(gray - grayL) < range && Math.abs(gray - grayT) < range
+				&& Math.abs(gray - grayD) < range) {
+			return false;
+		}
+		
 		Graphics graphics = image.getGraphics();
 		int x1, y1, x2, y2;
 
@@ -309,11 +335,11 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		// 绝大部分初级视觉皮层细胞，都有一个“最喜欢的方位”（preferred orientation，中文习惯翻译成“最优方位”）
 		// 类似的，还存在“运动方向选择性”、“空间频率/时间频率选择性”（很快会讲到）、“颜色选择性”等等。
 
-		HashMap<Integer, Double> orientationSelectivity = new HashMap<Integer, Double>();
+		TreeMap<Integer, Double> orientationSelectivity = new TreeMap<Integer, Double>();
 		for (int i = 0; i < 180; i++) {
 			// 外环两个点
-			x1 = (int) (x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
-			y1 = (int) (y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
+			x1 = (int)Math.round (x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
+			y1 = (int)Math.round (y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
 
 			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
 			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
@@ -329,38 +355,46 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 				int to = Math.max(y1, y2);
 				for (int y = from; y <= to; y++) {
 					// 当斜率等于0，平行与X轴
-					int x = (int) ((y - y1) * slope + x1);
+					int x = (int) Math.round((y - y1) * slope + x1);
 
 					centerFieldBrightness.add(blurImage[x][y]);
 					detected[x][y] = 1;
 					if (i >= 30 && i < 60) {// 靠近45度斜线，10到11点钟方向
-						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x - 1][y + width]) >= RANGE) {
+						// https://lup.lub.lu.se/luur/download?func=downloadFile&recordOId=1333297&fileOId=1333298
+						// 两种情况：1、感受野两侧亮度差异；感受野两侧亮度相同，与中间的亮度存在差异；
+						
+						// 中间线条的亮度平均数、与两侧亮度平均数比较；
+						
+						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x - 1][y + width]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x - 1][y + width] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x - 1][y + width] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					} else if (i >= 60 && i < 120) {// 靠近Y轴
-						if (Math.abs(blurImage[x + width][y] - blurImage[x - 1][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y] - blurImage[x - 1][y]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x + width][y] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x - 1][y] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x - 1][y] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					} else if (i >= 120 && i < 150) {// 靠近135度斜线，1-2点钟方向
-						if (Math.abs(blurImage[x + width][y + width] - blurImage[x - 1][y - 1]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x - 1][y - 1]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x - 1][y - 1] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x - 1][y - 1] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					}
 				}
-				orientationSelectivity.put(i,
-						Math.max(centerDiff, bothSidesDiff) / Integer.valueOf(Math.abs(to - from + 1)).doubleValue());
+				double contrast = Math.max(centerDiff, bothSidesDiff)
+						/ Integer.valueOf(Math.abs(to - from + 1)).doubleValue();
+				if (contrast > 0.2F) {
+					orientationSelectivity.put(i, contrast);
+				}
 //				if(orientationSelectivity.get(i) > 0.95F) {
 //					System.out.println("方向" + i + "度，总共比对像素：" + centerFieldBrightness.size() + "，两侧差异数： " + bothSidesDiff
 //							+ ", 中线与两侧差异数：" + centerDiff);
@@ -371,38 +405,42 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 				int to = Math.max(x1, x2);
 				for (int x = from; x <= to; x++) {
 					// 当斜率等于0，平行与X轴
-					int y = (int) ((x - x1) * slope + y1);
+					int y = (int) Math.round((x - x1) * slope + y1);
 
 					centerFieldBrightness.add(blurImage[x][y]);
 					detected[x][y] = 1;
 					if (i >= 30 && i < 60) {// 靠近45度斜线，10到11点钟方向
-						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x - 1][y + width]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x - 1][y + width]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x - 1][y + width] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x - 1][y + width] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					} else if (i < 30 || i >= 150) {// 靠近X轴
-						if (Math.abs(blurImage[x][y + width] - blurImage[x][y - 1]) >= RANGE) {
+						if (Math.abs(blurImage[x][y + width] - blurImage[x][y - 1]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x][y + width] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x][y - 1] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x][y + width] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x][y - 1] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					} else if (i >= 120 && i < 150) {// 靠近135度斜线，1-2点钟方向
-						if (Math.abs(blurImage[x + width][y + width] - blurImage[x - 1][y - 1]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x - 1][y - 1]) >= range) {
 							bothSidesDiff++;
 						}
-						if (Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) >= RANGE
-								&& Math.abs(blurImage[x - 1][y - 1] - blurImage[x][y]) >= RANGE) {
+						if (Math.abs(blurImage[x + width][y + width] - blurImage[x][y]) >= range
+								&& Math.abs(blurImage[x - 1][y - 1] - blurImage[x][y]) >= range) {
 							centerDiff++;
 						}
 					}
 				}
-				orientationSelectivity.put(i,
-						Math.max(centerDiff, bothSidesDiff) / Integer.valueOf(Math.abs(to - from + 1)).doubleValue());
+				double contrast = Math.max(centerDiff, bothSidesDiff)
+						/ Integer.valueOf(Math.abs(to - from + 1)).doubleValue();
+
+				if (contrast > 0.2F) {
+					orientationSelectivity.put(i, contrast);//  > 135 ? i - 180 : i
+				}
 			}
 
 //			if(orientationSelectivity.get(i) > 0.95F) {
@@ -411,36 +449,125 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //			}
 		}
 
-		Integer key = orientationSelectivity.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
 //		System.out.println("最佳方位：" + key + "度，拮抗比例：" + orientationSelectivity.get(key));
 		// TODO 需要前馈机制，在复杂细胞合并线条时，重新计算简单细胞。
-		if (orientationSelectivity.get(key) > 0.92F) {
-			count++;
-			x1 = (int) (x0 - radius * Math.sin(Math.PI * (key - 90) / 180));
-			y1 = (int) (y0 + radius * Math.cos(Math.PI * (key - 90) / 180));// - radius
+		// FIXME 两侧差异大于 90%，取得最佳，不一定是最佳，需要根据后续的猜想，只需要在一个范围内就可以。
 
-			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
-			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
+		// 取出最大的10个值
+		List<Map.Entry<Integer, Double>> list = new ArrayList<>(orientationSelectivity.entrySet());
+		list.sort(Map.Entry.<Integer, Double>comparingByValue().reversed());
 
-//			graphics.setColor(Color.RED);
-			graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
-			graphics.drawLine(x1, y1, x2, y2);
+		// 只取前10个元素
+        List<Map.Entry<Integer, Double>> top10 = list.subList(0, Math.min(10, list.size()));
 
-//			lineArray[x1][y1] = new Line(key, x1, y1, x2, y2);
-			LineGrid lineGrid = lineGridArray[x1 / (radius * 4)][y1 / (radius * 4)];
-			if (lineGrid == null) {
-				lineGrid = new LineGrid();
-				lineGridArray[x1 / (radius * 4)][y1 / (radius * 4)] = lineGrid;
-			}
-			lineGrid.getLineList().add(new Line(key, x1, y1, x2, y2));
-			return true;
+		boolean result = false;// 需要安装VALUE排序，取最大的10个。
+
+		// TODO 取矢量平均。将所有方向的度数相加取平均值
+		if(orientationSelectivity.size() <=0) {
+			return false;
 		}
+//		double average = calculateAverageAngle(orientationSelectivity.keySet());
+//		double average = orientationSelectivity.keySet().stream()
+//      .mapToDouble(angle -> Math.toRadians(angle)).average().orElse(0);
+		double average = Math.round(top10.stream()
+			      .mapToDouble(angle ->angle.getKey()).average().orElse(90));
+//		System.out.println(average);
+		// 靠近0，或者180附近，平均数是90
+		
+//		if (orientationSelectivity.get(key) > 0.20F) {
+		x1 = (int) Math.round(x0 - radius * Math.sin(Math.PI * (average - 90) / 180));
+		y1 = (int) Math.round(y0 + radius * Math.cos(Math.PI * (average - 90) / 180));// - radius
+
+		x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
+		y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
+
+//		graphics.setColor(Color.WHITE);
+		graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
+		graphics.drawLine(x1, y1, x2, y2);
+
+//		lineArray[x1][y1] = new Line(key, x1, y1, x2, y2);
+		LineGrid p1 = edgeGrid[x1][y1];
+		LineGrid p2 = edgeGrid[x2][y2];
+		if (p1 == null) {
+			p1 = new LineGrid();
+			edgeGrid[x1][y1] = p1;
+		}
+		if (p2 == null) {
+			p2 = new LineGrid();
+			edgeGrid[x2][y2] = p2;
+		}
+		p1.getLineList().add(new Line((int)average, x1, y1, x2, y2));
+		p2.getLineList().add(new Line((int)average, x1, y1, x2, y2));
+		
+//		for (Entry<Integer, Double> top : list.subList(0, Math.min(30, list.size()))) {// 从小到大排列。
+//			if (result) {
+//				break;
+//			}
+//			count++;
+//			if (orientationSelectivity.get(top.getKey()) > 0.95F) {// 90%置信度，有一个边缘也是可信的。
+//				result = true;
+//			} else {
+//				return false;
+//			}
+//			if (orientationSelectivity.get(top.getKey()) < 0.1F) {
+//				result = true;
+//			}
+////			if (orientationSelectivity.get(key) > 0.20F) {
+//			x1 = (int) (x0 - radius * Math.sin(Math.PI * (top.getKey() - 90) / 180));
+//			y1 = (int) (y0 + radius * Math.cos(Math.PI * (top.getKey() - 90) / 180));// - radius
+//
+//			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
+//			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
+//
+////			graphics.setColor(Color.RED);
+//			graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
+//			graphics.drawLine(x1, y1, x2, y2);
+//
+////			lineArray[x1][y1] = new Line(key, x1, y1, x2, y2);
+//			LineGrid lineGrid = lineGridArray[x1 / (radius * 4)][y1 / (radius * 4)];
+//			if (lineGrid == null) {
+//				lineGrid = new LineGrid();
+//				lineGridArray[x1 / (radius * 4)][y1 / (radius * 4)] = lineGrid;
+//			}
+//			lineGrid.getLineList().add(new Line(top.getKey(), x1, y1, x2, y2));
+////			result = true;
+////			}
+//		}
 
 		// TODO 需要先做高斯滤波平滑噪声
 		// https://zhuanlan.zhihu.com/p/143426695
 		// TODO 用Canny边缘检测，先计算每个像素点两个方向的梯度，然后计算幅值
-		return false;
+		return result;
 	}
+	
+	public void vectorAveraging() {
+		// avg(a) = atan( avg(sin(a)) / avg(cos(a)) )
+		
+		
+	}
+	
+//	public static double calculateAverageAngle(Set<Integer> angles) {
+//        if (angles.isEmpty()) {
+//            throw new IllegalArgumentException("角度列表为空");
+//        }
+//
+//        // 将角度转换为弧度并计算总和
+//        double totalRadians = angles.stream()
+//                .mapToDouble(angle -> Math.toRadians(angle))
+//                .sum();
+//
+//        // 计算平均弧度
+//        double averageRadians = totalRadians / angles.size();
+//
+//        // 将平均弧度转换回角度
+//        double averageAngle = Math.toDegrees(averageRadians);
+//
+//        // 确保平均角度在0到360度之间
+//        averageAngle = (averageAngle + 360) % 360;
+//
+//        return averageAngle;
+//    }
+
 
 	static Random RANDOM = new Random();
 
@@ -449,8 +576,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 * 
 	 * 简单细胞：特定位置，特定方向，复杂细胞：不管位置，特定方向，超复杂细胞：不论位置、方向，对角起反应
 	 * 
-	 * <Point>
-	 * V1对简单的方向有反应，V2可以编码两个方向的夹角
+	 * <Point> V1对简单的方向有反应，V2可以编码两个方向的夹角
 	 */
 	public static void hypercomplexCellReceptiveField() {// 分为低阶超复杂细胞和高阶超复杂细胞。类似简单细胞和复杂细胞的关系。
 
@@ -500,8 +626,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 * Hubel和Wiesel根据对视觉刺激的反应特征，在视皮层发现了多种神经元，分别叫做简单细胞、复杂细胞以及超复杂细胞。他们后续的研究以及后来大量科研工作者的实验对这些不同细胞的功能进行了深入的探索。他们的另外一项重要发现则是在视皮层中证实了之前由Vernon
 	 * Mountcastle(1918--2015)根据其在躯体感觉皮层的研究提出的皮层功能柱的结构。他们的发现可以简单描述为许多具有相同特性的皮层细胞，在视皮层内按照一定的规则在空间上排列起来，这种按功能排列的皮层结构，即皮层的功能构筑，沿着皮层的不同层次呈现柱状分布，例如方向柱、方位柱、眼优势柱、空间频率柱以及颜色柱等。这一结构的形成对于皮层内感觉信息的处理具有重要的影响。
 	 * 
-	 * <Point>
-	 * 有4种类型视皮层神经元。
+	 * <Point> 有4种类型视皮层神经元。
 	 * 
 	 * 1．简单细胞。感受野面积较小，给光区和撤光区分离，有较明显的空间总合，反应具有线性特征，没有或很少有自发放电。具有特定方向和在视野中有固定位置的刺激，最能激发简单细胞。
 	 * 
@@ -519,8 +644,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 * <Point>
 	 * 在大脑视觉皮层中，具有相同视功能特性（相同图像特征选择性和相同感受野）的皮层细胞，以垂直于大脑表面的方式排列称柱状结构，被称为视皮层功能柱。大体有两种功能柱理论，即特征提取功能柱和空间频率功能柱。特征提取功能柱包括：方位柱、眼优势柱、颜色柱等。
 	 * 
-	 * <Point>
-	 * 研究表明，功能柱系统正好与各种特征检测功能一一对应。所有功能柱都垂直于皮层表面，排列成片层状。
+	 * <Point> 研究表明，功能柱系统正好与各种特征检测功能一一对应。所有功能柱都垂直于皮层表面，排列成片层状。
 	 * 
 	 * 1. 方位柱。位于17区和18区。细胞的敏感方位总是很有规律地按顺时针或逆时针方向变化。
 	 * 
@@ -532,33 +656,118 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 * 
 	 * 猕猴大脑皮层由约109个神经元组成，这些神经元构成了约105个功能柱结构，每个功能柱结构中包含了约104个神经元。先前的解剖学证据表明，某一个功能柱内的神经元（这些神经元具有相似的功能特异性，例如偏好某一颜色、朝向、运动方向、深度信息等）倾向于与其他具有相同功能特性的功能柱产生连接。
 	 * 
-	 * <Point>
-	 * http://www.ziint.zju.edu.cn/index.php/event/details.html?tid=415
+	 * <Point> http://www.ziint.zju.edu.cn/index.php/event/details.html?tid=415
 	 */
 	public void functionColumn() {
 
 		// 功能柱，是卷积？
 	}
 
-	public static void main2(String[] args) throws IOException {
-		int x = 100, y = 100;
-		for (int j = x - radius; j < x + radius; j++) {
-			for (int k = y - radius; k < y + radius; k++) {
-				if ((j - x) * (j - x) + (k - y) * (k - y) <= radius * radius) {// 在圆内
-					System.out.println(j + "," + k);
-				}
+	/**
+	 * 高斯滤波
+	 * 
+	 * @param image
+	 * @param g
+	 * @return
+	 */
+	private static int[][] filteringGaussian(BufferedImage image, double g) {
+		int w = image.getWidth();
+		int h = image.getHeight();
+
+		int length = 5;
+		int k = length / 2;
+		double sigma = Math.sqrt(g);
+
+		double[][] gaussian = new double[length][length];
+		double sum = 0;
+		for (int i = 0; i < length; i++) {
+			for (int j = 0; j < length; j++) {
+				gaussian[i][j] = Math.exp(-((i - k) * (i - k) + (j - k) * (j - k)) / (2 * sigma * sigma));
+				gaussian[i][j] /= 2 * Math.PI * sigma * sigma;
+				sum += gaussian[i][j];
 			}
 		}
+		for (int i = 0; i < length; i++) {
+			for (int j = 0; j < length; j++) {
+				gaussian[i][j] /= sum;
+			}
+		}
+
+		BufferedImage gaussianImg = new BufferedImage(w, h, image.getType());
+
+		int[][] grayImage = new int[image.getWidth()][image.getHeight()];
+		for (int x = k; x < w - k; x++) {
+			for (int y = k; y < h - k; y++) {
+				int newpixel = 0;
+				for (int gx = 0; gx < length; gx++) {
+					for (int gy = 0; gy < length; gy++) {
+						int ix = x + gx - k;
+						int iy = y + gy - k;
+						if (ix < 0 || iy < 0 || ix >= w || iy >= h)
+							continue;
+						else {
+							newpixel += getGray(image.getRGB(ix, iy)) * gaussian[gx][gy];
+						}
+					}
+				}
+				newpixel = (int) Math.round(1.0 * newpixel);
+				gaussianImg.setRGB(x, y, new Color(newpixel, newpixel, newpixel).getRGB());
+				grayImage[x][y] = newpixel;// 灰度处理
+			}
+		}
+		return grayImage;
 	}
 
+	private static int getGray(int pixel) {
+		return pixel & 0xff;
+	}
+
+
+    public static double calculateContrast(BufferedImage image) {
+        // 计算亮度的最大值和最小值
+        int[] minMax = findMinMax(image);
+        int minBrightness = minMax[0];
+        int maxBrightness = minMax[1];
+
+        // 计算对比度
+        double contrast = maxBrightness - minBrightness;
+
+        return contrast;
+    }
+
+    private static int[] findMinMax(BufferedImage image) {
+        int minBrightness = Integer.MAX_VALUE;
+        int maxBrightness = Integer.MIN_VALUE;
+
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int rgb = image.getRGB(x, y);
+                int brightness = (rgb >> 16) & 0xFF; // 取红色分量作为亮度
+                minBrightness = Math.min(minBrightness, brightness);
+                maxBrightness = Math.max(maxBrightness, brightness);
+            }
+        }
+
+        return new int[]{minBrightness, maxBrightness};
+    }
+
 	public static void main(String[] args) throws IOException {
-		BufferedImage bufferedImage = ImageIO.read(new File("E:/IMG/2040.jpg"));
+		BufferedImage bufferedImage = ImageIO.read(new File("D:/file/05.jpg"));
+		
+//		 BufferedImage resizedImage = new BufferedImage(bufferedImage.getWidth()  * 2 / 3, bufferedImage.getHeight() * 2 / 3 , bufferedImage.getType());
+//		 
+//         // 绘制并缩放原图到新图片
+//         Graphics g2d = resizedImage.createGraphics();
+//         g2d.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth() * 2 / 3, bufferedImage.getHeight()  * 2 / 3, null);
+//         g2d.dispose();
+//         ImageIO.write(resizedImage, "jpg", new File("D:/file/05-resized.jpg"));
+		
 		long t0 = System.currentTimeMillis();
 		BufferedImage result = show(bufferedImage);
 
 		long t1 = System.currentTimeMillis();
 		System.out.println("Visual Edge, cost: " + (t1 - t0) + "ms.");
-		FileOutputStream output = new FileOutputStream(new File("E:/IMG/2040-edge.jpg"));
+		FileOutputStream output = new FileOutputStream(new File("D:/file/05-edge.jpg"));
 
 		ImageIO.write(result, "jpg", output);
 		output.flush();
