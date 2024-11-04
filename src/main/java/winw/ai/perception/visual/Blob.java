@@ -3,8 +3,6 @@ package winw.ai.perception.visual;
 /**
  * TODO 带阴影或光线不均衡，或者亮度差异，直方图均衡化处理
  * 
- * <Point> winwgaze
- * 
  * @author winw
  *
  */

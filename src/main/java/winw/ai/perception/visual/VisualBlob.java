@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -40,7 +39,7 @@ import javax.imageio.ImageIO;
  * @author winw
  *
  */
-public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，midget）接收单个视锥信号， 然后整合到 V1 斑块区，整合为 V2区的细条纹区
+public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，midget）接收单个视锥信号， 然后整合到 V1 斑块区，整合为 V2区的细条纹区 stripes
 
 	// 从中间点开始遍历，向四周扩散，将相同颜色的区域分割为斑块。斑块的大小应该是小型的。
 
@@ -66,7 +65,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	 * @param image
 	 * @return
 	 */
-	public static List<BlobArea> colorReceptiveField(BufferedImage resultImage, BufferedImage image) {
+	public static List<Area> colorReceptiveField(BufferedImage resultImage, BufferedImage image) {
 		// 转换为灰度图像
 //		ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
 //		BufferedImage grayImage = op.filter(image, null);
@@ -144,7 +143,7 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 		// FIXME degree 是空间频率，是一个很重要的参数。
 		int degree = 36;// 把视野分为20*20份，每一个空间频率里去分辨合并颜色；
 		
-		List<BlobArea> blobList =  new ArrayList<BlobArea>();
+		List<Area> blobList =  new ArrayList<Area>();
 
 		Set<Blob> repeatSet = new HashSet<Blob>();// 已经被合并过
 		for (int m = 0; m < blobs.length; m += degree) {
@@ -168,41 +167,30 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 					}
 				}
 				if(blobSet.size() > 0) {
-					blobList.add(new BlobArea(blobSet));
+					blobList.add(new Area(blobSet));
 				}
 
 			}
 		}
-
+		// TODO 带阴影或光线不均衡，或者亮度差异，直方图均衡化处理
 		// FIXME 用颜色卷积?
 
 		// 还需要再做一次合并，有一些小的Blob没有被合并进去。
 
 		// 有一些Blob被漏掉了，在上下左右找到时候，漏掉了，被分割了。
 
-		for (BlobArea blobArea : blobList) {
+		for (Area area : blobList) {
 			Color randomColor = new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat());
 
-			for (int m = 0; m < blobArea.getBlob().length; m++) {
-				for (int n = 0; n < blobArea.getBlob()[m].length; n++) {
-					if (blobArea.getBlob()[m][n] > 0) {
-						resultImage.setRGB(blobArea.getMinX() + m, blobArea.getMinY() + n,
+			for (int m = 0; m < area.getBlob().length; m++) {
+				for (int n = 0; n < area.getBlob()[m].length; n++) {
+					if (area.getBlob()[m][n] > 0) {
+						resultImage.setRGB(area.getMinX() + m, area.getMinY() + n,
 								randomColor.getRGB());
 					}
 				}
 			}
 			
-//			for (Blob colorBlob : blobArea.getBlobSet()) {
-//				int[][] blobArray = colorBlob.getBlob();
-//				for (int m = 0; m < blobArray.length; m++) {
-//					for (int n = 0; n < blobArray[m].length; n++) {
-//						if (blobArray[m][n] > 0) {
-//							resultImage.setRGB(colorBlob.getX0() - radius + m, colorBlob.getY0() - radius + n,
-//									randomColor.getRGB());
-//						}
-//					}
-//				}
-//			}
 		}
 
 		return blobList;
@@ -681,9 +669,10 @@ public class VisualBlob {// 颜色：侏儒神经节细胞（或称小细胞，m
 	public static int radius = 3;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static void main(String[] args) throws IOException {
-		String im = "D:/file/05.jpg";
-		String ot = "D:/file/05-blob.jpg";
+		String im = "D:/file/data/building.jpg";
+		String ot = "D:/file/temp/building-blob.jpg";
 		
+		// TODO 颜色相干矢量
 
 //		String im = "D:/file/IMG_20150222_090728.jpg";
 //		String ot = "D:/file/temp/IMG_20150222_090728-blob.jpg";

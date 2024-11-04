@@ -113,7 +113,7 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 						if (lineCount >= 3) {// 检测到直线。
 
 							Line line2 = new Line(line.getOrientation(), j - radius,
-									 calculateY(slope, j, k, j - radius), j + radius,
+									calculateY(slope, j, k, j - radius), j + radius,
 									calculateY(slope, j, k, j + radius));
 
 							// FIXME 这条线的两侧不允许有其他线。如果有其他线，则这个线就不成立。
@@ -135,13 +135,13 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 							System.out.println("lineCount: " + lineCount);
 							graphics.setColor(new Color(RANDOM.nextFloat(), RANDOM.nextFloat(), RANDOM.nextFloat()));
 							graphics.drawLine(j - radius, calculateY(slope, j, k, j - radius), j + radius,
-									 calculateY(slope, j, k, j + radius));
+									calculateY(slope, j, k, j + radius));
 
 						}
 
 					} else {
 						for (int y = k - radius; y < k + radius && y != k; y++) {
-							int x =  (int)Math.round((y - (k - slope * j)) / slope);
+							int x = (int) Math.round((y - (k - slope * j)) / slope);
 							if (x <= 1 || x >= edgeGrid.length - 1) {
 								continue;
 							}
@@ -173,9 +173,8 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 
 						if (lineCount >= 3) {// 检测到直线。
 
-							Line line2 = new Line(line.getOrientation(),
-									calculateX(slope, j, k, k - radius), k - radius,
-									calculateX(slope, j, k, k + radius), k + radius);
+							Line line2 = new Line(line.getOrientation(), calculateX(slope, j, k, k - radius),
+									k - radius, calculateX(slope, j, k, k + radius), k + radius);
 
 							// FIXME 这条线的两侧不允许有其他线。如果有其他线，则这个线就不成立。
 							boolean lineValid = true;
@@ -319,14 +318,13 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 	}
 
 	public static int calculateY(double slope, double x1, double y1, double x) {
-		return (int)Math.round(y1 + slope * (x - x1));
+		return (int) Math.round(y1 + slope * (x - x1));
 	}
 
 	public static int calculateX(double slope, double x1, double y1, double y) {
-		return (int)Math.round((y - (y1 - slope * x1)) / slope);
+		return (int) Math.round((y - (y1 - slope * x1)) / slope);
 	}
 
-	
 	protected static void lineExtends(Map<Line, Line> lineLink, List<Line> lineList, Line lineA, Line lineB) {
 		// A 与 B 关联的 C 也在一条线上。
 
@@ -349,7 +347,7 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 		BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
 		// 需要定义感受野半径
-		int[][] grayImage = VisualEdge.brightnessReceptiveField(image);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
+		int[][] grayImage = VisualRetina.brightnessReceptiveField(image, 3);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
 		LineGrid[][] lineGridArray = VisualEdge.edgeReceptiveField(result, grayImage);// 在V1或V2，线条感受野，当两个有交集时，可以合并。
 
 		complexCellReceptiveField(result, lineGridArray);
@@ -357,13 +355,13 @@ public class VisualLine {// TODO 复杂细胞感受野，有4个相邻的简单�
 	}
 
 	public static void main(String[] args) throws IOException {
-		BufferedImage bufferedImage = ImageIO.read(new File("D:/file/05.jpg"));
+		BufferedImage bufferedImage = ImageIO.read(new File("D:/file/data/leuvenB.jpg"));
 		long t0 = System.currentTimeMillis();
 		BufferedImage result = show(bufferedImage);
 
 		long t1 = System.currentTimeMillis();
 		System.out.println("Visual Line, cost: " + (t1 - t0) + "ms.");
-		FileOutputStream output = new FileOutputStream(new File("D:/file/05-line.jpg"));
+		FileOutputStream output = new FileOutputStream(new File("D:/file/temp/leuvenB-line.jpg"));
 
 		ImageIO.write(result, "jpg", output);
 		output.flush();

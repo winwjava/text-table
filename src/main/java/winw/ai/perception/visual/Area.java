@@ -2,7 +2,16 @@ package winw.ai.perception.visual;
 
 import java.util.Set;
 
-public class BlobArea {
+/**
+ * 有多个Blob组成的区域。
+ * 
+ * <h2>Area 性质</h2>
+ * <p>
+ * 纵横比：宽度与高度的比例。在双目视觉中同一个物体纵横比相差不大。
+ * <p>
+ * 中心位置：在双目摄像头中，同一个物体的Y轴中心位置相同，X轴会有一定范围的视差。
+ */
+public class Area {
 
 	private Set<Blob> blobSet;
 
@@ -16,11 +25,11 @@ public class BlobArea {
 	private int height;
 
 	// minX 和 minY 相当于X0 和Y0
-	private int minX = Integer.MAX_VALUE;// 可以当作偏移量
+	private int minX = Integer.MAX_VALUE;
+	private int minY = Integer.MAX_VALUE;
 	private int maxX = 0;
-	private int minY = Integer.MAX_VALUE;// 可以当作偏移量
 	private int maxY = 0;
-	
+
 	/**
 	 * 纵横比，双目成像中物体的纵横比（形状）或像素数变化不大，纵轴和横轴会按比例缩小或扩大。
 	 */
@@ -32,7 +41,7 @@ public class BlobArea {
 
 	private int[][] blob;// 重新定义一个二值图，把每个小的Blob合并起来，用于跟另外一个摄像头的二值图比较。
 
-	public BlobArea(Set<Blob> blobSet) {
+	public Area(Set<Blob> blobSet) {
 		super();
 		this.blobSet = blobSet;
 

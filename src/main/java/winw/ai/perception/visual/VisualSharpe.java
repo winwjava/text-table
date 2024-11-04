@@ -50,7 +50,7 @@ public class VisualSharpe extends Graph {// 需要支持三维形状
 	 */
 	private List<List<Point>> edgeList;
 
-	private SimpleMatrix matrix = new SimpleMatrix(210, 210);// 形状矩阵
+//	private SimpleMatrix matrix = new SimpleMatrix(210, 210);// 形状矩阵
 
 	public VisualSharpe() {
 		super();

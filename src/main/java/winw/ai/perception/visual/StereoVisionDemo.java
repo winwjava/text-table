@@ -4,19 +4,14 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
-
-import winw.ai.perception.visual.opencv.CannyTest;
 
 public class StereoVisionDemo implements ActionListener {
 
@@ -26,29 +21,31 @@ public class StereoVisionDemo implements ActionListener {
 	public void actionPerformed(ActionEvent event) {
 		webcam.open();
 		BufferedImage image = webcam.getImage();
-		
+
 		try {
 			stereoVision(image);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public BufferedImage stereoVision(BufferedImage image) throws IOException {
-		FileOutputStream output = new FileOutputStream(new File("D:/file/05-StereoVision.jpg"));
-		ImageIO.write(image, "JPEG", output);
-		output.close();
-		// 使用 Canny 边缘分割
-		BufferedImage bufImage = ImageIO.read(new File("D:/file/05-StereoVision.jpg"));
-		BufferedImage cannyImg = CannyTest.getCannyImg(bufImage, 0.08, 0.4, 2);
-//		output = new FileOutputStream(new File("D:/file/05-StereoVision.jpg"));
-//		ImageIO.write(cannyImg, "JPEG", output);
-//		output.close();
-		// 使用threshold 阈值分割
-		return cannyImg;
+
+	public void stereoVision(BufferedImage stereo) throws IOException {
+		// TODO 需要从两侧裁剪一段。视野未重叠部分不能做视差计算。
+		int crop = 20;// 两侧分别裁剪10个像素
+		BufferedImage leftImage = stereo.getSubimage(crop, 0, 640 - crop * 2, 480);
+		BufferedImage rightImage = stereo.getSubimage(640 + crop, 0, 640 - crop * 2, 480);// 两侧分别裁剪10个像素
+
+		long t0 = System.currentTimeMillis();
+//		BufferedImage image = ImageIO.read(new File(im));
+//		FileOutputStream output = new FileOutputStream(new File(ot));
+		StereoVision.disparityImage(leftImage, rightImage);
+
+		long t1 = System.currentTimeMillis();
+		System.out.println("Visual Blob, cost: " + (t1 - t0) + "ms.");
+
 	}
 
-	public static void main1(String[] args) {
+	public static void main(String[] args) {
 		for (Webcam cam : Webcam.getWebcams()) {
 			System.out.println(
 					cam.getName() + " : " + cam.getViewSize().getHeight() + "," + cam.getViewSize().getWidth());
@@ -64,7 +61,7 @@ public class StereoVisionDemo implements ActionListener {
 		panel.setFPSDisplayed(true);
 		panel.setDisplayDebugInfo(true);
 		panel.setImageSizeDisplayed(true);
-		panel.setMirrored(true);
+//		panel.setMirrored(true);
 		panel.add(b);
 		JFrame window = new JFrame("Stereo Vision");
 		window.pack();
@@ -74,20 +71,5 @@ public class StereoVisionDemo implements ActionListener {
 		window.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-	
-	
-	
 
-	public static void main(String[] args) throws IOException {
-		BufferedImage image = ImageIO.read(new File("D:/file/05-StereoVision.jpg"));
-		BufferedImage resultImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-		VisualBlob.colorReceptiveField(resultImage, image);
-		FileOutputStream output = new FileOutputStream(new File("D:/file/0511-StereoVision-blob.jpg"));
-		ImageIO.write(resultImage, "jpg", output);
-		output.flush();
-		output.close();
-
-		// TODO 找到平行等长的线段。
-		// TODO 如果两个blob之间差异不大，但存在边缘，则强化这个边缘两侧blob的对比度。
-	}
 }

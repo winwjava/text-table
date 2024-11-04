@@ -274,7 +274,7 @@ public class VisualCorner {// 角感受器，线条中断感受器，短线段�
 
 		BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 
-		int[][] grayImage = VisualEdge.brightnessReceptiveField(image);
+		int[][] grayImage = VisualRetina.brightnessReceptiveField(image, 3);
 		LineGrid[][] lineGridArray = VisualEdge.edgeReceptiveField(result, grayImage);
 
 		// 角感受器

@@ -6,11 +6,11 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.bytedeco.opencv.opencv_imgproc.Vec3fVector;
 import org.opencv.calib3d.StereoSGBM;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -85,12 +85,12 @@ public class StereoMatcherDemo {
 	            	
 	            	double[] ds = img_pseudocolor.get(y, x);
 	            	
-	            	img_pseudocolor.at<Vec3b>(y,x)[0] = abs(255-tmp); //blue
-	                   img_pseudocolor.at<Vec3b>(y,x)[1] = abs(127-tmp); //green
-	                    img_pseudocolor.at<Vec3b>(y,x)[2] = abs( 0-tmp); //red
-	                   img_pseudocolor.at<Vec3b>(y,x)[0] = abs(255-tmp); //blue
-	                   img_pseudocolor.at<Vec3b>(y,x)[1] = abs(127-tmp); //green
-	                    img_pseudocolor.at<Vec3b>(y,x)[2] = abs( 0-tmp); //red
+//	            	img_pseudocolor.at<Vec3b>(y,x)[0] = abs(255-tmp); //blue
+//	                   img_pseudocolor.at<Vec3b>(y,x)[1] = abs(127-tmp); //green
+//	                    img_pseudocolor.at<Vec3b>(y,x)[2] = abs( 0-tmp); //red
+//	                   img_pseudocolor.at<Vec3b>(y,x)[0] = abs(255-tmp); //blue
+//	                   img_pseudocolor.at<Vec3b>(y,x)[1] = abs(127-tmp); //green
+//	                    img_pseudocolor.at<Vec3b>(y,x)[2] = abs( 0-tmp); //red
 	            }
 	     }
 		

@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -64,6 +63,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 	 */
 	public static int RANGE = 15;// 明暗梯度，当前感受野存在亮度差异。黑暗环境下对比度小。
 
+	// 总共640 × 480 像素，72度，每度大约6.6-8.8个像素，半径是3-5个像素。
 	public static int radius = 3;// 感受野半径，空间频率(感受野大小)，总的视野分成若干度，每一度的大小。
 
 	public static BufferedImage show(BufferedImage image) {
@@ -74,100 +74,11 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //				null);
 //		graphics.dispose();
 
-		int[][] grayImage = brightnessReceptiveField(image);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
+		int[][] grayImage = VisualRetina.brightnessReceptiveField(image, radius);// 灰度处理，边缘增强，返回二值化二维数组，存储亮度0~255
 
 		BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 		edgeReceptiveField(result, grayImage);// 在V1或V2，线条感受野，当两个有交集时，可以合并。
 		return result;
-	}
-
-	/**
-	 * 视网膜亮度感受野。
-	 * 
-	 * <Point> 先通过同心圆拮抗式感受野重新计算亮度。 <Point>
-	 * 同心圆拮抗式感受野，由一个兴奋作用强的中心机制和一个作用较弱但面积更大的抑制性周边机制构成[Rodieck 1965]．
-	 * 这两个具有相互拮抗作用的机制，都具有高斯分布的性质，但中心机制具有更高的峰敏感度，而且彼此方向相反，故称相减关系，又称高斯差模型(Difference
-	 * of Gaussians，DOG)．
-	 * 
-	 * <Point> 马赫带效应，处于明暗边界稍稍偏向亮处位置，感受野的反应最强烈，因为其感受野兴奋性中心全部被光照射，而抑制性周边没有全部被光照。
-	 * 相反，处在边界偏向暗处时，因为只有小部分抑制性周边受到光照，故其反应比黑暗中无刺激时的神经节细胞自发放电水平还要低。
-	 * 这说明，明暗边界感受野并不是根据一个像素得到的，而是通过周围像素的加权平均得到，并且需要通过拮抗式计算。
-	 * 
-	 * <Point> 马赫带的好处是，可以增强明暗边界的对比度，更有利于计算物体边缘和轮廓。
-	 * 
-	 * @return
-	 */
-	public static int[][] brightnessReceptiveField(BufferedImage image) {
-
-		BufferedImage grayII = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-		int[][] grayImage = new int[image.getWidth()][image.getHeight()];
-		for (int m = image.getMinX(); m < image.getWidth(); m++) {
-			for (int n = image.getMinY(); n < image.getHeight(); n++) {
-				// image.setRGB 实际是sRGB，存储的还有Alpha，存取RGB的值，需要通过Color。
-				grayImage[m][n] = brightness(image.getRGB(m, n));// 灰度处理
-				grayII.setRGB(m, n, grayImage[m][n]);
-			}
-		}
-
-		// 高斯模糊，增强边界
-		int[][] gaussianImage = filteringGaussian(grayII, 2);
-
-		grayImage = gaussianImage;
-
-		// 马赫带效应处理，构造同心圆拮抗式感受野。将明暗边界处的亮侧增强亮度，暗测降低亮度。
-		// 在灰度处理的基础上，考虑视网膜感受野的马赫带效应，增强明暗边界的对比度，更有利于计算物体边缘和轮廓。
-		// 中心全被光照，环绕部分有小部分没有光照，则将这个中心区域的亮度增强；
-		int[][] machImage = Arrays.stream(grayImage).map(a -> Arrays.copyOf(a, a.length)).toArray(int[][]::new);
-		for (int x = image.getMinX() + radius + 1; x < image.getWidth() - radius - 1; x += (radius / 2)) {
-			for (int y = image.getMinY() + radius + 1; y < image.getHeight() - radius - 1; y += (radius / 2)) {
-				List<Integer> centerPoint = new ArrayList<Integer>();// 中心
-				List<Integer> aroundPoint = new ArrayList<Integer>();// 环绕
-
-				for (int j = x - radius; j < x + radius; j++) {
-					for (int k = y - radius; k < y + radius; k++) {
-						if ((j - x) * (j - x) + (k - y) * (k - y) <= (radius / 2) * (radius / 2)) {// 在同心圆中心部分
-							centerPoint.add(grayImage[j][k]); // 只取RGB中的R，便于计算
-						} else if ((j - x) * (j - x) + (k - y) * (k - y) <= radius * radius) {// 在同心圆环绕部分
-							aroundPoint.add(grayImage[j][k]);// 只取RGB中的R，便于计算
-						}
-					}
-				}
-
-				// 太多的大数字相加，溢出
-				Double centerBrightness = centerPoint.stream().mapToDouble(a -> a).average().getAsDouble();
-				Double aroundBrightness = aroundPoint.stream().mapToDouble(a -> a).average().getAsDouble();
-				int compare = centerBrightness.compareTo(aroundBrightness);
-				if (compare == 0) {
-				} else if (centerBrightness - aroundBrightness > 1) {// 中心部分比环绕部分亮
-					for (int j = x - radius; j < x + radius; j++) {
-						for (int k = y - radius; k < y + radius; k++) {
-							if ((j - x) * (j - x) + (k - y) * (k - y) <= (radius / 2) * (radius / 2)) {// 在同心圆中心部分
-								int gray = grayImage[j][k];// 亮度
-								// 增强或减弱的过大，会形成新的边缘。// gray / 100;// 亮度增强10%
-								gray += (centerBrightness - aroundBrightness) > 3 ? 3
-										: (centerBrightness - aroundBrightness);
-								machImage[j][k] = gray > 255 ? 255 : gray;
-							}
-						}
-					}
-				} else if (aroundBrightness - centerBrightness > 1) {// 中心部分比环绕部分暗
-					for (int j = x - radius; j < x + radius; j++) {
-						for (int k = y - radius; k < y + radius; k++) {
-							if ((j - x) * (j - x) + (k - y) * (k - y) <= (radius / 2) * (radius / 2)) {// 在同心圆中心部分
-								int gray = grayImage[j][k];// 亮度
-								// 增强或减弱的过大，会形成新的边缘。// gray / 100;// 亮度增强10%
-								gray -= (aroundBrightness - centerBrightness) > 3 ? 3
-										: (aroundBrightness - centerBrightness);// gray / 100;// 亮度减弱10%
-								machImage[j][k] = gray < 0 ? 0 : gray;
-							}
-						}
-					}
-				}
-
-			}
-		}
-
-		return machImage;
 	}
 
 	/**
@@ -209,7 +120,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 			for (int j = 0 + radius + 1; j < grayImage[0].length - radius - 2; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (detected[i][j] <= 0) {
-					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 1, edgeGrid);
+					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 1, edgeGrid);// 中间有一个像素的情况。
 				}
 			}
 		}
@@ -219,7 +130,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 			for (int j = 0 + radius + 1; j < grayImage[0].length - radius - 2; j++) {
 				// 循环X和Y坐标，逐个像素比较。
 				if (detected[i][j] <= 0) {
-					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 2, edgeGrid);
+					simpleCellReceptiveField(image, grayImage, i, j, radius, detected, 2, edgeGrid);// 中间有两个像素的情况。
 				}
 			}
 		}
@@ -288,45 +199,44 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		int grayT = blurImage[x0][y0 + width];
 		int grayD = blurImage[x0][y0 - 1];
 
-
 		// 计算对比度，对比度高时，将RANGE调大，否则调小。
-        int minBrightness = gray;// (rgb >> 16) & 0xFF; // 取红色分量作为亮度
-        int maxBrightness = gray;
+		int minBrightness = gray;// (rgb >> 16) & 0xFF; // 取红色分量作为亮度
+		int maxBrightness = gray;
 
-        // 计算视野中的对比度。
+		// 计算视野中的对比度。
 		for (int j = x0 - radius; j < x0 + radius; j++) {
 			for (int k = y0 - radius; k < y0 + radius; k++) {
 				minBrightness = Math.min(minBrightness, blurImage[j][k]);
-                maxBrightness = Math.max(maxBrightness, blurImage[j][k]);
+				maxBrightness = Math.max(maxBrightness, blurImage[j][k]);
 			}
 		}
-		
+
 		int cc = maxBrightness - minBrightness;
-		
+
 		int range = 20;
 //		System.out.println(maxBrightness + " - "+ minBrightness +" = "+ cc);
-		
-		if(cc < 15) {
+
+		if (cc < 15) {
 			return false;
 		}
-		
+
 //		range = cc / 2;
-		
-		if(cc > 60) {
+
+		if (cc > 60) {
 			range = 30;
-		} else if(cc > 30) {
+		} else if (cc > 30) {
 			range = 20;
 		}
 //		else {
 //			range = 10;
 //		}
-		
+
 		// 如果中心点周围4个点没有亮度差异，则跳过，否则开始找边缘。
 		if (Math.abs(grayR - gray) < range && Math.abs(gray - grayL) < range && Math.abs(gray - grayT) < range
 				&& Math.abs(gray - grayD) < range) {
 			return false;
 		}
-		
+
 		Graphics graphics = image.getGraphics();
 		int x1, y1, x2, y2;
 
@@ -338,8 +248,8 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		TreeMap<Integer, Double> orientationSelectivity = new TreeMap<Integer, Double>();
 		for (int i = 0; i < 180; i++) {
 			// 外环两个点
-			x1 = (int)Math.round (x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
-			y1 = (int)Math.round (y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
+			x1 = (int) Math.round(x0 - radius * Math.sin(Math.PI * (i - 90) / 180));
+			y1 = (int) Math.round(y0 + radius * Math.cos(Math.PI * (i - 90) / 180));// - radius
 
 			x2 = (x1 > x0) ? x0 - (x1 - x0) : x0 + (x0 - x1);
 			y2 = (y1 > y0) ? y0 - (y1 - y0) : y0 + (y0 - y1);
@@ -362,9 +272,9 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 					if (i >= 30 && i < 60) {// 靠近45度斜线，10到11点钟方向
 						// https://lup.lub.lu.se/luur/download?func=downloadFile&recordOId=1333297&fileOId=1333298
 						// 两种情况：1、感受野两侧亮度差异；感受野两侧亮度相同，与中间的亮度存在差异；
-						
+
 						// 中间线条的亮度平均数、与两侧亮度平均数比较；
-						
+
 						if (Math.abs(blurImage[x + width][y - 1] - blurImage[x - 1][y + width]) >= range) {
 							bothSidesDiff++;
 						}
@@ -439,7 +349,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 						/ Integer.valueOf(Math.abs(to - from + 1)).doubleValue();
 
 				if (contrast > 0.2F) {
-					orientationSelectivity.put(i, contrast);//  > 135 ? i - 180 : i
+					orientationSelectivity.put(i, contrast);// > 135 ? i - 180 : i
 				}
 			}
 
@@ -458,22 +368,21 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		list.sort(Map.Entry.<Integer, Double>comparingByValue().reversed());
 
 		// 只取前10个元素
-        List<Map.Entry<Integer, Double>> top10 = list.subList(0, Math.min(10, list.size()));
+		List<Map.Entry<Integer, Double>> top10 = list.subList(0, Math.min(10, list.size()));
 
 		boolean result = false;// 需要安装VALUE排序，取最大的10个。
 
 		// TODO 取矢量平均。将所有方向的度数相加取平均值
-		if(orientationSelectivity.size() <=0) {
+		if (orientationSelectivity.size() <= 0) {
 			return false;
 		}
 //		double average = calculateAverageAngle(orientationSelectivity.keySet());
 //		double average = orientationSelectivity.keySet().stream()
 //      .mapToDouble(angle -> Math.toRadians(angle)).average().orElse(0);
-		double average = Math.round(top10.stream()
-			      .mapToDouble(angle ->angle.getKey()).average().orElse(90));
+		double average = Math.round(top10.stream().mapToDouble(angle -> angle.getKey()).average().orElse(90));
 //		System.out.println(average);
 		// 靠近0，或者180附近，平均数是90
-		
+
 //		if (orientationSelectivity.get(key) > 0.20F) {
 		x1 = (int) Math.round(x0 - radius * Math.sin(Math.PI * (average - 90) / 180));
 		y1 = (int) Math.round(y0 + radius * Math.cos(Math.PI * (average - 90) / 180));// - radius
@@ -496,9 +405,9 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 			p2 = new LineGrid();
 			edgeGrid[x2][y2] = p2;
 		}
-		p1.getLineList().add(new Line((int)average, x1, y1, x2, y2));
-		p2.getLineList().add(new Line((int)average, x1, y1, x2, y2));
-		
+		p1.getLineList().add(new Line((int) average, x1, y1, x2, y2));
+		p2.getLineList().add(new Line((int) average, x1, y1, x2, y2));
+
 //		for (Entry<Integer, Double> top : list.subList(0, Math.min(30, list.size()))) {// 从小到大排列。
 //			if (result) {
 //				break;
@@ -539,13 +448,12 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		// TODO 用Canny边缘检测，先计算每个像素点两个方向的梯度，然后计算幅值
 		return result;
 	}
-	
+
 	public void vectorAveraging() {
 		// avg(a) = atan( avg(sin(a)) / avg(cos(a)) )
-		
-		
+
 	}
-	
+
 //	public static double calculateAverageAngle(Set<Integer> angles) {
 //        if (angles.isEmpty()) {
 //            throw new IllegalArgumentException("角度列表为空");
@@ -568,7 +476,6 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //        return averageAngle;
 //    }
 
-
 	static Random RANDOM = new Random();
 
 	/**
@@ -589,11 +496,6 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //			System.out.println("brightness: " + brightness +", gray: "+gray);
 //		}
 		return (brightness << 16) | (brightness << 8) | brightness;
-	}
-
-	public static int brightness(int rgb) {
-		// 亮度公式 Brightness = ((R*299)+(G*587)+(B*114))/1000
-		return ((((rgb & 0xff0000) >> 16) * 299) + (((rgb & 0xff00) >> 8) * 587) + ((rgb & 0xff) * 114)) / 1000;
 	}
 
 	public static int brightness(Color color) {
@@ -663,97 +565,37 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 		// 功能柱，是卷积？
 	}
 
-	/**
-	 * 高斯滤波
-	 * 
-	 * @param image
-	 * @param g
-	 * @return
-	 */
-	private static int[][] filteringGaussian(BufferedImage image, double g) {
-		int w = image.getWidth();
-		int h = image.getHeight();
+	public static double calculateContrast(BufferedImage image) {
+		// 计算亮度的最大值和最小值
+		int[] minMax = findMinMax(image);
+		int minBrightness = minMax[0];
+		int maxBrightness = minMax[1];
 
-		int length = 5;
-		int k = length / 2;
-		double sigma = Math.sqrt(g);
+		// 计算对比度
+		double contrast = maxBrightness - minBrightness;
 
-		double[][] gaussian = new double[length][length];
-		double sum = 0;
-		for (int i = 0; i < length; i++) {
-			for (int j = 0; j < length; j++) {
-				gaussian[i][j] = Math.exp(-((i - k) * (i - k) + (j - k) * (j - k)) / (2 * sigma * sigma));
-				gaussian[i][j] /= 2 * Math.PI * sigma * sigma;
-				sum += gaussian[i][j];
-			}
-		}
-		for (int i = 0; i < length; i++) {
-			for (int j = 0; j < length; j++) {
-				gaussian[i][j] /= sum;
-			}
-		}
-
-		BufferedImage gaussianImg = new BufferedImage(w, h, image.getType());
-
-		int[][] grayImage = new int[image.getWidth()][image.getHeight()];
-		for (int x = k; x < w - k; x++) {
-			for (int y = k; y < h - k; y++) {
-				int newpixel = 0;
-				for (int gx = 0; gx < length; gx++) {
-					for (int gy = 0; gy < length; gy++) {
-						int ix = x + gx - k;
-						int iy = y + gy - k;
-						if (ix < 0 || iy < 0 || ix >= w || iy >= h)
-							continue;
-						else {
-							newpixel += getGray(image.getRGB(ix, iy)) * gaussian[gx][gy];
-						}
-					}
-				}
-				newpixel = (int) Math.round(1.0 * newpixel);
-				gaussianImg.setRGB(x, y, new Color(newpixel, newpixel, newpixel).getRGB());
-				grayImage[x][y] = newpixel;// 灰度处理
-			}
-		}
-		return grayImage;
+		return contrast;
 	}
 
-	private static int getGray(int pixel) {
-		return pixel & 0xff;
+	private static int[] findMinMax(BufferedImage image) {
+		int minBrightness = Integer.MAX_VALUE;
+		int maxBrightness = Integer.MIN_VALUE;
+
+		for (int y = 0; y < image.getHeight(); y++) {
+			for (int x = 0; x < image.getWidth(); x++) {
+				int rgb = image.getRGB(x, y);
+				int brightness = (rgb >> 16) & 0xFF; // 取红色分量作为亮度
+				minBrightness = Math.min(minBrightness, brightness);
+				maxBrightness = Math.max(maxBrightness, brightness);
+			}
+		}
+
+		return new int[] { minBrightness, maxBrightness };
 	}
-
-
-    public static double calculateContrast(BufferedImage image) {
-        // 计算亮度的最大值和最小值
-        int[] minMax = findMinMax(image);
-        int minBrightness = minMax[0];
-        int maxBrightness = minMax[1];
-
-        // 计算对比度
-        double contrast = maxBrightness - minBrightness;
-
-        return contrast;
-    }
-
-    private static int[] findMinMax(BufferedImage image) {
-        int minBrightness = Integer.MAX_VALUE;
-        int maxBrightness = Integer.MIN_VALUE;
-
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int rgb = image.getRGB(x, y);
-                int brightness = (rgb >> 16) & 0xFF; // 取红色分量作为亮度
-                minBrightness = Math.min(minBrightness, brightness);
-                maxBrightness = Math.max(maxBrightness, brightness);
-            }
-        }
-
-        return new int[]{minBrightness, maxBrightness};
-    }
 
 	public static void main(String[] args) throws IOException {
 		BufferedImage bufferedImage = ImageIO.read(new File("D:/file/05.jpg"));
-		
+
 //		 BufferedImage resizedImage = new BufferedImage(bufferedImage.getWidth()  * 2 / 3, bufferedImage.getHeight() * 2 / 3 , bufferedImage.getType());
 //		 
 //         // 绘制并缩放原图到新图片
@@ -761,7 +603,7 @@ public class VisualEdge {// TODO 这里考虑采用二维数组存储亮度信�
 //         g2d.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth() * 2 / 3, bufferedImage.getHeight()  * 2 / 3, null);
 //         g2d.dispose();
 //         ImageIO.write(resizedImage, "jpg", new File("D:/file/05-resized.jpg"));
-		
+
 		long t0 = System.currentTimeMillis();
 		BufferedImage result = show(bufferedImage);
 
