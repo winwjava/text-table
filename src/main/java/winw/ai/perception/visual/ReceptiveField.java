@@ -40,6 +40,11 @@ public class ReceptiveField {
 	private int orientation;
 
 	/**
+	 * 运动方向（与颜色、朝向不同，在视觉通路中走背侧通路，最终汇集到MT区：运动、导航，空间知觉和运动知觉）
+	 */
+	private int direction;
+
+	/**
 	 * 颜色
 	 */
 	private int color;
@@ -54,11 +59,15 @@ public class ReceptiveField {
 	 */
 	private SortedMap<Integer, Integer> colorStats;
 
-	/**
-	 * 运动方向（与颜色、朝向不同，在视觉通路中走背侧通路，最终汇集到MT区：运动、导航，空间知觉和运动知觉）
-	 */
-	private int direction;
+	// TODO 通过色相范围区分。统计当前感受野，大部分属于哪个色相范围。
 
+	/**
+	 * 颜色的统计比例（灰度直方图）。高空间频率中，感受野中各个颜色占的比例。例如树木、草丛、建筑物表面、地面。
+	 */
+	private SortedMap<Integer, Integer> hueStats;// 颜色直方图
+	
+//	private int hueFrom;
+	
 	public int getX() {
 		return x;
 	}
@@ -149,6 +158,14 @@ public class ReceptiveField {
 
 	public void setColorStats(SortedMap<Integer, Integer> colorStats) {
 		this.colorStats = colorStats;
+	}
+
+	public SortedMap<Integer, Integer> getHueStats() {
+		return hueStats;
+	}
+
+	public void setHueStats(SortedMap<Integer, Integer> hueStats) {
+		this.hueStats = hueStats;
 	}
 
 }

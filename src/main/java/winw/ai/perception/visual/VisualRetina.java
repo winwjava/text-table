@@ -128,6 +128,10 @@ public class VisualRetina extends RetinaReceptiveField {
 							}
 						}
 						field.setColorStats(colorRatio);
+						field.setHueStats(colorRatio);
+						// 怎么把这个信息方便去比较？
+						
+						
 						field.setColor(field.getColorStats().firstKey());
 						// FIXME 首选颜色，应该单独设置功能柱
 						colorColumn.getOrDefault(field.getColorStats().firstKey(), new ArrayList<ReceptiveField>())
@@ -177,6 +181,9 @@ public class VisualRetina extends RetinaReceptiveField {
 			}
 		}
 
+		// 中高空间频率的识别，需要特征识别参与，例如人脸
+		// 如果是草木、建筑物，需要根据空间频率提取颜色，例如空间频率在一定范围内，并且是连续的，则
+
 		// 根据颜色柱，合并为形状。柱状结构微环路
 		// colorColumn
 
@@ -215,6 +222,9 @@ public class VisualRetina extends RetinaReceptiveField {
 
 		// TODO 在高空间频率区域中（1.5到4.25），存在颜色主题色或混合色，占主导地位的情况。加以区分即可。
 		// 怎么找到主导颜色，
+
+		// TODO 颜色中心，选举（如果某一区域是A颜色，）？
+		// TODO 颜色选举算法
 
 		// 根据空间频率合并，取9个感受野统计
 		int v2radius = radius * 2;// 感受野半径
@@ -292,6 +302,8 @@ public class VisualRetina extends RetinaReceptiveField {
 			}
 		}
 
+		// 用HSV中的H重新绘制一遍看看
+
 //		for (int m = image.getMinX(); m < image.getWidth(); m++) {
 //			for (int n = image.getMinY(); n < image.getHeight(); n++) {
 		// 去掉RGB中的绿色
@@ -306,6 +318,60 @@ public class VisualRetina extends RetinaReceptiveField {
 //			}
 //		}
 		return fieldImage;
+	}
+
+	public void colorReceptiveField() {
+		// 在感受野上，怎么把颜色信息传输到大脑皮层？
+		// 颜色的视椎细胞，非常多，
+		
+		// 当前感受野只对红色感兴趣。
+		
+		// TODO 通过色相范围区分。统计当前感受野，大部分属于哪个色相范围。
+		
+	}
+	
+	/**
+	 * 颜色距离
+	 * 
+	 * <p>
+	 * 每个感受野找出最多颜色，
+	 * 
+	 */
+	public void colorDistance() {
+
+		// 在三维空间上，找到
+		
+		
+	}
+
+	/**
+	 * 颜色选举算法
+	 * 
+	 * <p>
+	 * 每个感受野有1票（或若干票），最终选出一个票数最多的颜色。
+	 * 
+	 */
+	@Deprecated
+	public void colorElection() {
+		// FIXME 当一个感受野中有多个颜色，视网膜是怎么传输信号的？
+		
+		// 颜色单拮抗(single-opponent)细胞和V1中的颜色双拮抗
+		
+		// 每个感受野选举出颜色，如果一个区域的感受野的颜色
+		
+		// 选举出颜色
+		
+		
+	}
+
+	/**
+	 * 颜色神经网络算法。
+	 * 
+	 * <p> 建立神经网络
+	 */
+	@Deprecated
+	public void colorNeuralNetwork() {
+
 	}
 
 	private static void mergeNeighborByColor(int[][] grayImage, ReceptiveField[][] fieldImage,
@@ -446,7 +512,17 @@ public class VisualRetina extends RetinaReceptiveField {
 	 */
 	public static boolean hueSimilar(int hue, int other) {
 		System.out.println("hue: " + hue + "/" + other);
-		return hue / 10 == other / 10;
+		
+		// 计算两个色相值的差值
+        int diff = Math.abs(hue - other);
+        
+        // 如果差值大于180度，计算360度减去差值
+        if (diff > 180) {
+            diff = 360 - diff;
+        }
+        
+        // 如果差值小于或等于阈值，则认为两个色相相近
+        return diff <= 8;
 	}
 
 	public static boolean rgbSimilar(int rgb, int color, int contrast) {
@@ -604,20 +680,13 @@ public class VisualRetina extends RetinaReceptiveField {
 			for (int n = image.getMinY(); n < image.getHeight(); n++) {
 				// image.setRGB 实际是sRGB，存储的还有Alpha，存取RGB的值，需要通过Color。
 				int b = brightness(image.getRGB(m, n));// 灰度处理
-				int gray = (b <<16) | (b<< 8)|b;
+				int gray = (b << 16) | (b << 8) | b;
 				grayImage[m][n] = gray;
-				
-				
+
 				grayII.setRGB(m, n, grayImage[m][n]);
 			}
 		}
 
-		try {
-			ImageIO.write(grayII, "jpg", new File("D:/file/temp/leuvenA-gray.jpg"));// 05-retina.jpg
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 		// 高斯模糊，增强边界
 		int[][] gaussianImage = filteringGaussian(grayII, 2);
 
